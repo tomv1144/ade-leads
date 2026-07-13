@@ -20,8 +20,6 @@
 
   function showError(input, message) {
     input.setAttribute("aria-invalid", "true");
-    // L'élément d'erreur associé est retrouvé via aria-describedby, ce qui
-    // garde le lien entre le champ et son message valide pour les lecteurs d'écran.
     const describedBy = input.getAttribute("aria-describedby");
     const errId = describedBy ? describedBy.split(" ").find((id) => id.indexOf("err-") === 0) : null;
     const target = errId ? document.getElementById(errId) : null;
@@ -43,10 +41,8 @@
   }
 
   function pushEvent(eventName, params) {
-    // GTM / dataLayer
     window.dataLayer = window.dataLayer || [];
     window.dataLayer.push(Object.assign({ event: eventName }, params || {}));
-    // GA4 direct (si gtag est chargé indépendamment de GTM)
     if (typeof window.gtag === "function") {
       window.gtag("event", eventName, params || {});
     }
@@ -54,9 +50,6 @@
 
   /* --------------------------------------------------------------------
      2. BLOCS CRÉDITS DYNAMIQUES
-     Les 5 blocs existent déjà dans le HTML statique (nécessaire pour que
-     Netlify Forms détecte tous les champs au build). On affiche/active
-     uniquement le nombre de blocs correspondant à la sélection.
   -------------------------------------------------------------------- */
   const nombreCreditsSelect = $("#nombre_credits");
   const creditBlocks = $$(".credit-block");
@@ -112,10 +105,10 @@
       progressSteps[0].classList.add("is-complete");
       progressSteps[0].classList.remove("is-active");
       progressSteps[1].classList.add("is-active");
-      progressLabel.textContent = "Étape 2 sur 2 : vos coordonnées";
+      progressLabel.textContent = "Étape 2 sur 2 : comment vous joindre";
       progressBar.setAttribute("aria-valuenow", "2");
       step2.querySelector("input")?.focus();
-      pushEvent("form_step_2_view"); // utile pour créer une audience Meta de retargeting "arrivé à l'étape 2"
+      pushEvent("form_step_2_view");
     }
   }
 
@@ -157,7 +150,6 @@
       if (validateStep1()) {
         goToStep(2);
       } else {
-        // ramène le focus au premier champ en erreur, évite au visiteur de devoir chercher
         const firstError = step1.querySelector('[aria-invalid="true"]');
         if (firstError) firstError.focus();
       }
@@ -233,7 +225,7 @@
     form.addEventListener("submit", function (event) {
       event.preventDefault();
 
-      const fieldsToValidate = [prenomInput, nomInput, telephoneInput, emailInput, rgpdInput];
+      const fieldsToValidate = [prenomInput, nomInput, emailInput, telephoneInput, rgpdInput];
       const allValid = fieldsToValidate.every((input) => validateField(input));
 
       if (!allValid) {
@@ -265,26 +257,40 @@
           form.hidden = true;
           formSuccess.hidden = false;
 
-          // L'événement de conversion "Lead" est déclenché sur merci.html
-          // (page de confirmation), pas ici : ça garantit qu'il ne se
-          // déclenche que lorsque le visiteur a réellement vu la confirmation,
-          // et évite tout risque de double comptage si l'utilisateur
-          // rafraîchit ou revient en arrière avant la redirection.
+          fetch("/.netlify/functions/capi-lead", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: payload.email,
+              telephone: payload.telephone,
+              clientUserAgent: navigator.userAgent,
+              eventSourceUrl: window.location.href,
+            }),
+          }).catch(function () {
+            /* silencieux : la Conversions API est un bonus, jamais un blocage */
+          });
+
+          fetch("/.netlify/functions/airtable-lead", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          }).catch(function () {
+            /* silencieux : le CRM est un bonus, jamais un blocage */
+          });
+
           window.location.href = "/merci.html";
         })
         .catch(function () {
           formErrorSummary.textContent = "Une erreur est survenue lors de l'envoi. Merci de réessayer, ou de nous appeler directement.";
           formErrorSummary.hidden = false;
           submitBtn.disabled = false;
-          submitBtn.textContent = "Demander mon étude gratuite";
+          submitBtn.textContent = "Vérifier mon assurance gratuitement";
         });
     });
   }
 
   /* --------------------------------------------------------------------
      6. CTA STICKY MOBILE
-     Apparaît uniquement une fois le formulaire du hero dépassé, pour ne
-     jamais superposer deux CTA à l'écran en même temps.
   -------------------------------------------------------------------- */
   const stickyCta = $("#sticky-cta");
   const heroFormWrapper = $("#form-lead");
@@ -301,8 +307,6 @@
     observer.observe(heroFormWrapper);
   }
 
-  /* Tracking des clics CTA (utile pour comparer la performance de chaque
-     emplacement de bouton en A/B testing). */
   $$("[data-cta]").forEach((cta) => {
     cta.addEventListener("click", () => {
       pushEvent("cta_click", { cta_location: cta.getAttribute("data-cta") });
