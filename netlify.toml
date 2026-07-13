@@ -7,6 +7,7 @@
   publish = "."
   # Aucune commande de build : les fichiers sont déployés tels quels.
   command = ""
+  functions = "netlify/functions"
 
 [[headers]]
   for = "/*"
