@@ -240,6 +240,7 @@ select:focus-visible, summary:focus-visible {
 .badge svg { color: var(--color-gold); flex-shrink: 0; }
 
 .hero-cta { margin-top: var(--space-sm); }
+.hero-cta-microline { font-size: 0.82rem; color: var(--color-text-muted); margin: 10px 0 0; }
 
 /* Carte formulaire */
 .hero-form-wrapper { scroll-margin-top: 90px; }
@@ -260,7 +261,8 @@ select:focus-visible, summary:focus-visible {
   color: var(--color-gold);
   margin-bottom: 4px;
 }
-.form-header h2 { font-size: 1.4rem; margin-bottom: var(--space-sm); }
+.form-header h2 { font-size: 1.4rem; margin-bottom: 4px; }
+.form-subtext { font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: var(--space-sm); }
 
 .progress-bar {
   display: flex;
@@ -458,6 +460,45 @@ input[aria-invalid="true"], select[aria-invalid="true"] { border-color: var(--co
 .lemoine-text p { color: rgba(255,255,255,0.82); font-size: 1.05rem; }
 
 /* ---------------------------------------------------------------------------
+   8b. SIMULATEUR D'ÉCONOMIE
+--------------------------------------------------------------------------- */
+.simulateur { text-align: center; }
+.simulateur-container { max-width: 640px; }
+.simulateur-intro { color: var(--color-text-muted); margin-bottom: var(--space-md); }
+.simulateur-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-md);
+  text-align: left;
+}
+.simulateur-fields {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+.simulateur-btn { width: 100%; }
+.simulateur-resultat {
+  margin-top: var(--space-md);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--color-border);
+  text-align: center;
+}
+.simulateur-resultat-label { color: var(--color-text-muted); font-size: 0.9rem; margin-bottom: 4px; }
+.simulateur-resultat-montant {
+  font-family: var(--font-title);
+  font-size: clamp(1.8rem, 5vw, 2.4rem);
+  font-weight: 700;
+  color: var(--color-gold);
+  margin: 0 0 var(--space-xs);
+}
+.simulateur-reassurance { font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: var(--space-sm); }
+.simulateur-resultat .btn { display: inline-block; }
+.simulateur-disclaimer { font-size: 0.76rem; color: var(--color-text-muted); margin: var(--space-sm) 0 0; text-align: center; }
+
+/* ---------------------------------------------------------------------------
    9. TIMELINE
 --------------------------------------------------------------------------- */
 .how-it-works h2 { text-align: center; }
@@ -505,6 +546,40 @@ input[aria-invalid="true"], select[aria-invalid="true"] { border-color: var(--co
 .why-item h3 { font-family: var(--font-title); font-size: 1.2rem; font-weight: 600; color: var(--color-blue); }
 
 /* ---------------------------------------------------------------------------
+   10b. PREUVE SOCIALE (sections désactivées par défaut dans le HTML,
+   styles prêts à l'emploi le jour de l'activation)
+--------------------------------------------------------------------------- */
+.social-proof-reviews, .social-proof-testimonials,
+.social-proof-stats, .social-proof-case-study, .social-proof-logos {
+  text-align: center;
+}
+.reviews-summary { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: var(--space-sm); }
+.reviews-score { font-family: var(--font-title); font-size: 1.8rem; font-weight: 700; color: var(--color-blue); }
+.reviews-stars { color: var(--color-gold); letter-spacing: 2px; }
+.reviews-count { color: var(--color-text-muted); font-size: 0.9rem; }
+
+.testimonials-grid { display: grid; grid-template-columns: 1fr; gap: var(--space-sm); margin-top: var(--space-lg); text-align: left; }
+.testimonial-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md); margin: 0; }
+.testimonial-card p { font-style: italic; color: var(--color-text); }
+.testimonial-card cite { font-style: normal; font-size: 0.85rem; color: var(--color-text-muted); }
+
+.stats-grid { display: grid; grid-template-columns: 1fr; gap: var(--space-sm); margin-top: var(--space-lg); }
+.stat-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md); }
+.stat-number { display: block; font-family: var(--font-title); font-size: 2rem; font-weight: 700; color: var(--color-gold); }
+.stat-label { font-size: 0.9rem; color: var(--color-text-muted); }
+.stats-disclaimer { font-size: 0.78rem; color: var(--color-text-muted); margin-top: var(--space-sm); }
+
+.case-study-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md); margin-top: var(--space-lg); text-align: left; max-width: 640px; margin-left: auto; margin-right: auto; }
+.case-study-profile { font-weight: 500; color: var(--color-blue); }
+
+.logos-strip { display: flex; align-items: center; justify-content: center; gap: var(--space-lg); flex-wrap: wrap; opacity: 0.8; }
+
+@media (min-width: 640px) {
+  .testimonials-grid { grid-template-columns: repeat(2, 1fr); }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); max-width: 500px; margin-left: auto; margin-right: auto; }
+}
+
+/* ---------------------------------------------------------------------------
    11. FAQ
 --------------------------------------------------------------------------- */
 .faq-container { max-width: 760px; }
@@ -540,6 +615,7 @@ input[aria-invalid="true"], select[aria-invalid="true"] { border-color: var(--co
   margin: 0 auto;
 }
 .final-cta h2 { margin-bottom: var(--space-md); }
+.final-cta-urgency { font-size: 0.88rem; color: var(--color-gold); font-weight: 500; margin-bottom: var(--space-sm); }
 
 /* ---------------------------------------------------------------------------
    13. FOOTER
@@ -605,6 +681,7 @@ input[aria-invalid="true"], select[aria-invalid="true"] { border-color: var(--co
 @media (min-width: 960px) {
   .hero-grid { grid-template-columns: 1.15fr 1fr; gap: var(--space-xl); }
   .field-row { grid-template-columns: 1fr 1fr; }
+  .simulateur-fields { grid-template-columns: 1fr 1fr; }
   .benefits-grid { grid-template-columns: repeat(4, 1fr); }
   .lemoine-grid { grid-template-columns: 0.9fr 1.4fr; }
   .timeline { grid-template-columns: repeat(3, 1fr); }
@@ -616,3 +693,19 @@ input[aria-invalid="true"], select[aria-invalid="true"] { border-color: var(--co
   .benefits-grid { grid-template-columns: repeat(2, 1fr); }
   .why-grid { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ---------------------------------------------------------------------------
+   16. RESPONSIVE : MOBILE (<= 639px)
+   Plus de 80% du trafic Meta arrive ici. Objectif : réduire la distance de
+   scroll jusqu'au formulaire et entre les sections, sans rien couper au
+   contenu. Un scroll plus court = moins d'abandon avant conversion.
+--------------------------------------------------------------------------- */
+@media (max-width: 639px) {
+  section { padding: var(--space-lg) 0; } /* 40px au lieu de 72px : sections plus courtes */
+  .hero { padding-top: var(--space-md); padding-bottom: var(--space-md); }
+  .site-header { padding: 10px 0; } /* header plus compact, plus de place pour le contenu utile */
+  .form-card { padding: var(--space-sm); } /* formulaire plus dense, moins de vide inutile */
+  .badge-list { gap: 8px; }
+  .badge { font-size: 0.8rem; padding: 6px 10px; }
+}
+
