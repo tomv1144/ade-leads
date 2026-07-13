@@ -86,7 +86,7 @@
 <!-- ========================================================================
   TRACKING : GTM / GA4 / Meta Pixel
   Chargés uniquement après consentement (bandeau cookies CNIL), via
-  js/consent.js. Voir l'appel KlarimoConsent.init() en bas de page.
+  scripts/consent.js. Voir l'appel KlarimoConsent.init() en bas de page.
   Remplacer les identifiants GTM-XXXXXXX / G-XXXXXXXXXX / 0000000000000000
   par les vrais identifiants avant mise en ligne.
   Conversions API (à venir) : un événement "Lead" côté serveur, en complément
@@ -101,9 +101,9 @@
 <header class="site-header">
   <div class="container header-inner">
     <a href="index.html" class="logo">Klarimo</a>
-    <a href="tel:+33677523916" class="header-phone" aria-label="Appeler le cabinet Klarimo">
+    <a href="tel:+33100000000" class="header-phone" aria-label="Appeler le cabinet Klarimo">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.9 21 3 13.1 3 3c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.6.1.4 0 .8-.3 1.1L6.6 10.8Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
-      <span><!-- TODO: remplacer par le vrai numéro --> 06 77 52 39 16</span>
+      <span><!-- TODO: remplacer par le vrai numéro --> [Téléphone du cabinet]</span>
     </a>
   </div>
 </header>
@@ -118,8 +118,8 @@
 
       <div class="hero-content">
         <p class="eyebrow">Cabinet indépendant en assurance emprunteur</p>
-        <h1>Étude gratuite de votre assurance emprunteur</h1>
-        <p class="hero-subtitle">Vérifiez si vous pouvez réduire le coût de votre assurance emprunteur tout en conservant des garanties équivalentes ou supérieures, sans changer de banque.</p>
+        <h1>Votre assurance emprunteur vous coûte-t-elle plus cher que nécessaire ?</h1>
+        <p class="hero-subtitle">En 2 minutes, un conseiller vérifie gratuitement si vous pouvez payer moins pour des garanties équivalentes ou supérieures, sans changer de banque.</p>
 
         <ul class="badge-list" role="list">
           <li class="badge">
@@ -141,16 +141,18 @@
         </ul>
 
         <a href="#form-lead" class="btn btn-primary btn-large hero-cta" data-cta="hero">
-          Demander mon étude gratuite
+          Vérifier mon assurance gratuitement
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </a>
+        <p class="hero-cta-microline">Sans engagement. Vous restez libre à chaque étape.</p>
       </div>
 
       <div class="hero-form-wrapper" id="form-lead">
         <div class="form-card">
           <div class="form-header">
             <p class="form-eyebrow">Votre étude personnalisée</p>
-            <h2>Demandez votre étude gratuite</h2>
+            <h2>Vérifiez votre contrat</h2>
+            <p class="form-subtext">2 minutes, aucun document à préparer.</p>
             <div class="progress-bar" role="progressbar" aria-valuenow="1" aria-valuemin="1" aria-valuemax="2" aria-label="Progression du formulaire" id="progress-bar">
               <div class="progress-step is-active" data-step-indicator="1"></div>
               <div class="progress-step" data-step-indicator="2"></div>
@@ -169,7 +171,7 @@
               <legend class="visually-hidden">Votre situation</legend>
 
               <div class="field">
-                <label for="nombre_credits">Nombre de crédits immobiliers concernés</label>
+                <label for="nombre_credits">Combien de crédits immobiliers souhaitez-vous faire vérifier ?</label>
                 <select id="nombre_credits" name="nombre_credits" required aria-describedby="err-nombre_credits">
                   <option value="">Sélectionnez</option>
                   <option value="1">1 crédit</option>
@@ -321,15 +323,16 @@
               </div>
 
               <div class="field">
-                <label for="telephone">Téléphone</label>
-                <input type="tel" id="telephone" name="telephone" inputmode="tel" autocomplete="tel" placeholder="06 12 34 56 78" required aria-describedby="err-telephone">
-                <p class="field-error" role="alert" id="err-telephone" hidden></p>
-              </div>
-
-              <div class="field">
                 <label for="email">Email</label>
                 <input type="email" id="email" name="email" autocomplete="email" inputmode="email" placeholder="prenom.nom@email.fr" required aria-describedby="err-email">
                 <p class="field-error" role="alert" id="err-email" hidden></p>
+              </div>
+
+              <div class="field">
+                <label for="telephone">Téléphone</label>
+                <input type="tel" id="telephone" name="telephone" inputmode="tel" autocomplete="tel" placeholder="06 12 34 56 78" required aria-describedby="err-telephone help-telephone">
+                <p class="field-help" id="help-telephone">Nous vous appelons une seule fois, au moment qui vous arrange.</p>
+                <p class="field-error" role="alert" id="err-telephone" hidden></p>
               </div>
 
               <div class="field">
@@ -355,7 +358,7 @@
 
               <div class="form-step-actions">
                 <button type="button" class="btn btn-ghost" id="step-2-back">Retour</button>
-                <button type="submit" class="btn btn-primary btn-full" id="form-submit">Demander mon étude gratuite</button>
+                <button type="submit" class="btn btn-primary btn-full" id="form-submit">Vérifier mon assurance gratuitement</button>
               </div>
 
               <p class="form-error-summary" role="alert" id="form-error-summary" hidden></p>
@@ -381,6 +384,7 @@
       <p>Immatriculé ORIAS n°25009454</p>
       <p>Aucun engagement</p>
       <p>Données strictement confidentielles</p>
+      <p>Réponse honnête, même sans économie possible</p>
     </div>
   </section>
 
@@ -421,11 +425,11 @@
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.2" stroke="currentColor" stroke-width="1.6"/><path d="M5 20c1.2-3.8 4-5.5 7-5.5s5.8 1.7 7 5.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
           </div>
           <h3>Un conseiller dédié</h3>
-          <p>Un seul interlocuteur suit votre dossier du premier échange jusqu'à la mise en place, si vous décidez de changer d'assurance.</p>
+          <p>Le même conseiller suit votre dossier du premier échange jusqu'à la mise en place. Il connaît votre situation et ne vous fera jamais tout répéter.</p>
         </div>
 
       </div>
-      <p class="benefits-disclaimer">*Estimation indicative fondée sur des dossiers déjà étudiés par nos conseillers. Le montant réel dépend de votre capital restant dû, de votre âge et de votre état de santé, et n'est communiqué qu'après étude personnalisée.</p>
+      <p class="benefits-disclaimer">*Estimation indicative fondée sur des dossiers déjà étudiés par nos conseillers. Le montant réel dépend de votre capital restant dû, de votre âge et de votre état de santé, et n'est communiqué qu'après étude personnalisée. Si aucune économie n'est possible, nous vous le disons aussi, sans essayer de vous vendre autre chose.</p>
     </div>
   </section>
 
@@ -435,12 +439,55 @@
   <section class="lemoine" aria-labelledby="lemoine-title">
     <div class="container lemoine-grid">
       <div class="lemoine-heading">
-        <h2 id="lemoine-title">On vous a dit qu'il fallait attendre un an ?</h2>
+        <h2 id="lemoine-title">Beaucoup de propriétaires pensent encore qu'il faut attendre un an pour changer d'assurance emprunteur.</h2>
         <p class="lemoine-false">FAUX.</p>
       </div>
       <div class="lemoine-text">
-        <p>Depuis la loi n°2022-270 du 28 février 2022, dite « loi Lemoine », il est possible de changer d'assurance emprunteur à tout moment et sans frais, sous réserve du respect des conditions prévues par la loi, notamment l'équivalence du niveau de garanties avec votre contrat actuel.</p>
+        <p>En réalité, ce n'est plus le cas depuis 2022. Depuis la loi n°2022-270 du 28 février 2022, dite « loi Lemoine », il est possible de changer d'assurance emprunteur à tout moment et sans frais, sous réserve du respect des conditions prévues par la loi, notamment l'équivalence du niveau de garanties avec votre contrat actuel.</p>
         <p>Il n'y a donc plus de date anniversaire à surveiller ni de fenêtre de tir à ne pas manquer. Nos conseillers vérifient avec vous, gratuitement, si votre situation permet d'en bénéficier.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================================
+    SIMULATEUR D'ÉCONOMIE
+  ==================================================================== -->
+  <section class="simulateur" aria-labelledby="simulateur-title">
+    <div class="container simulateur-container">
+      <p class="eyebrow">Estimation en 30 secondes</p>
+      <h2 id="simulateur-title">Combien pourriez-vous économiser en changeant d'assurance ?</h2>
+      <p class="simulateur-intro">Indiquez le capital restant dû de votre prêt et le nombre d'années qu'il vous reste à rembourser : vous obtenez une fourchette réaliste, basée sur les taux moyens observés sur le marché entre un contrat bancaire classique et une délégation externe.</p>
+
+      <div class="simulateur-card">
+        <div class="simulateur-fields">
+          <div class="field">
+            <label for="sim-capital">Capital restant dû</label>
+            <div class="input-suffix">
+              <input type="text" inputmode="numeric" autocomplete="off" id="sim-capital" placeholder="150 000" aria-describedby="err-sim-capital">
+              <span class="suffix" aria-hidden="true">€</span>
+            </div>
+            <p class="field-error" role="alert" id="err-sim-capital" hidden></p>
+          </div>
+          <div class="field">
+            <label for="sim-duree">Durée restante du prêt</label>
+            <div class="input-suffix">
+              <input type="text" inputmode="numeric" autocomplete="off" id="sim-duree" placeholder="15" aria-describedby="err-sim-duree">
+              <span class="suffix" aria-hidden="true">ans</span>
+            </div>
+            <p class="field-error" role="alert" id="err-sim-duree" hidden></p>
+          </div>
+        </div>
+
+        <button type="button" class="btn btn-primary simulateur-btn" id="sim-calculer">Calculer mon économie potentielle</button>
+
+        <div class="simulateur-resultat" id="sim-resultat" hidden aria-live="polite">
+          <p class="simulateur-resultat-label">Économie potentielle sur la durée restante de votre prêt</p>
+          <p class="simulateur-resultat-montant"><span id="sim-montant-bas">0</span> € à <span id="sim-montant-haut">0</span> €</p>
+          <p class="simulateur-reassurance">Aucun frais de dossier ne peut vous être facturé pour ce changement (loi Lemoine du 28 février 2022).</p>
+          <a href="#form-lead" class="btn btn-secondary" data-cta="simulateur">Obtenir mon étude gratuite et personnalisée</a>
+        </div>
+
+        <p class="simulateur-disclaimer">Estimation indicative et non contractuelle, basée sur un taux moyen bancaire de 0,35 % à 0,45 % et un taux moyen en délégation externe de 0,15 % à 0,25 %, constatés sur le marché. Le contrat bancaire est calculé sur votre capital restant dû actuel maintenu fixe, tandis qu'une délégation externe est recalculée chaque année sur le capital réellement dû, ce qui explique l'essentiel de l'écart. Le montant exact dépend aussi de votre âge, de votre état de santé et de votre profession : il vous est communiqué précisément lors de votre étude gratuite.</p>
       </div>
     </div>
   </section>
@@ -459,8 +506,8 @@
         </li>
         <li class="timeline-step">
           <span class="step-number" aria-hidden="true">2</span>
-          <h3>Un conseiller analyse gratuitement votre situation</h3>
-          <p>Comparaison avec de nombreux assureurs, sans aucun engagement de votre part.</p>
+          <h3>Un conseiller étudie personnellement votre dossier</h3>
+          <p>Pas de script ni d'algorithme : une vraie personne compare votre contrat à ceux de nombreux assureurs, sans engagement de votre part.</p>
         </li>
         <li class="timeline-step">
           <span class="step-number" aria-hidden="true">3</span>
@@ -468,7 +515,7 @@
           <p>Vous recevez gratuitement une proposition personnalisée. Vous seul décidez de la suite.</p>
         </li>
       </ol>
-      <a href="#form-lead" class="btn btn-secondary" data-cta="how-it-works">Demander mon étude gratuite</a>
+      <a href="#form-lead" class="btn btn-secondary" data-cta="how-it-works">Vérifier mon assurance gratuitement</a>
     </div>
   </section>
 
@@ -506,6 +553,80 @@
       </ul>
     </div>
   </section>
+
+  <!-- ====================================================================
+    PREUVE SOCIALE : emplacements prêts à activer, désactivés par défaut.
+    Aucune donnée n'est inventée (aucun chiffre, aucun avis, aucun témoignage
+    fictif). Pour activer une section : retirer les balises <!-- et --> qui
+    l'entourent, puis remplacer les [placeholders] par des données réelles.
+    Chaque bloc est autonome et peut être activé indépendamment des autres.
+  ==================================================================== -->
+
+  <!-- ACTIVER ICI : Avis Google (nécessite une note et un nombre d'avis réels)
+  <section class="social-proof-reviews" aria-labelledby="reviews-title">
+    <div class="container">
+      <h2 id="reviews-title">L'avis de nos clients</h2>
+      <div class="reviews-summary">
+        <span class="reviews-score">[4,x] / 5</span>
+        <span class="reviews-stars" aria-hidden="true">★★★★★</span>
+        <span class="reviews-count">sur [nombre] avis Google</span>
+      </div>
+      <a href="[lien vers la fiche Google Business Profile]" target="_blank" rel="noopener noreferrer">Voir tous les avis</a>
+    </div>
+  </section>
+  -->
+
+  <!-- ACTIVER ICI : Témoignages clients (anonymisés, jamais inventés)
+  <section class="social-proof-testimonials" aria-labelledby="testimonials-title">
+    <div class="container">
+      <h2 id="testimonials-title">Ils ont vérifié leur contrat</h2>
+      <div class="testimonials-grid">
+        <blockquote class="testimonial-card">
+          <p>"[Verbatim client réel, avec son accord]"</p>
+          <cite>[Prénom], [Ville], [propriétaire ou investisseur]</cite>
+        </blockquote>
+        <blockquote class="testimonial-card">
+          <p>"[Verbatim client réel, avec son accord]"</p>
+          <cite>[Prénom], [Ville], [propriétaire ou investisseur]</cite>
+        </blockquote>
+      </div>
+    </div>
+  </section>
+  -->
+
+  <!-- ACTIVER ICI : Économies moyennes constatées (chiffre agrégé réel uniquement)
+  <section class="social-proof-stats" aria-labelledby="stats-title">
+    <div class="container">
+      <h2 id="stats-title">Ce que nos études ont permis</h2>
+      <div class="stats-grid">
+        <div class="stat-card"><span class="stat-number">[X €]</span><span class="stat-label">d'économie moyenne constatée</span></div>
+        <div class="stat-card"><span class="stat-number">[X]</span><span class="stat-label">dossiers étudiés</span></div>
+      </div>
+      <p class="stats-disclaimer">Chiffres calculés sur l'ensemble des dossiers étudiés au [mois/année], mis à jour périodiquement.</p>
+    </div>
+  </section>
+  -->
+
+  <!-- ACTIVER ICI : Étude de cas anonymisée (cas réel, sans donnée identifiante)
+  <section class="social-proof-case-study" aria-labelledby="case-study-title">
+    <div class="container">
+      <h2 id="case-study-title">Un exemple concret</h2>
+      <div class="case-study-card">
+        <p class="case-study-profile">[Profil anonymisé, ex. « Couple de propriétaires, 38 et 41 ans, Bordeaux »]</p>
+        <p class="case-study-before">Avant : [situation initiale résumée]</p>
+        <p class="case-study-after">Après : [résultat obtenu, garanties et économie]</p>
+      </div>
+    </div>
+  </section>
+  -->
+
+  <!-- ACTIVER ICI : Logos presse / certifications (jamais de logo d'assureur)
+  <section class="social-proof-logos" aria-label="Ils parlent de nous">
+    <div class="container logos-strip">
+      <img src="[logo média ou certification]" alt="[Nom du média ou de la certification]" loading="lazy" width="120" height="40">
+    </div>
+  </section>
+  -->
 
   <!-- ====================================================================
     FAQ : 13 questions, correspond exactement au schema.org FAQPage
@@ -589,8 +710,9 @@
   ==================================================================== -->
   <section class="final-cta" aria-labelledby="final-cta-title">
     <div class="container final-cta-inner">
+      <p class="final-cta-urgency">Chaque mensualité payée en trop ne se rattrape pas rétroactivement : autant vérifier votre contrat dès aujourd'hui.</p>
       <h2 id="final-cta-title">Vérifiez gratuitement si vous pouvez réduire le coût de votre assurance emprunteur</h2>
-      <a href="#form-lead" class="btn btn-primary btn-large" data-cta="final">Demander mon étude gratuite</a>
+      <a href="#form-lead" class="btn btn-primary btn-large" data-cta="final">Vérifier mon assurance gratuitement</a>
     </div>
   </section>
 
@@ -613,7 +735,7 @@
 
 <!-- CTA sticky mobile : affiché par JS une fois le hero dépassé -->
 <div class="sticky-cta" id="sticky-cta" hidden>
-  <a href="#form-lead" class="btn btn-primary btn-full" data-cta="sticky">Demander mon étude gratuite</a>
+  <a href="#form-lead" class="btn btn-primary btn-full" data-cta="sticky">Vérifier mon assurance gratuitement</a>
 </div>
 
 <!-- Bandeau de consentement cookies (RGPD/CNIL) : masqué par défaut, affiché
@@ -628,18 +750,18 @@
   </div>
 </div>
 
-<script src="js/consent.js" defer></script>
-<script src="js/script.js" defer></script>
+<script src="scripts/consent.js" defer></script>
+<script src="scripts/script.js" defer></script>
 <script>
   window.addEventListener("DOMContentLoaded", function () {
     window.KlarimoConsent.init({
       gtmId: "GTM-XXXXXXX",
       ga4Id: "G-XXXXXXXXXX",
-      pixelId: "1676800553973517",
+      pixelId: "0000000000000000",
       events: ["PageView", "ViewContent"]
     });
   });
 </script>
 </body>
 </html>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+                                                                                                                                                                                                                                                                                                                                                                                                                                                       
