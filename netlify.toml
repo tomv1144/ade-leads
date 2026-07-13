@@ -1,0 +1,46 @@
+# ==============================================================================
+# Klarimo — configuration Netlify
+# Site 100% statique (HTML/CSS/JS vanilla), aucune étape de build nécessaire.
+# ==============================================================================
+
+[build]
+  publish = "."
+  # Aucune commande de build : les fichiers sont déployés tels quels.
+  command = ""
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(), camera=(), microphone=()"
+
+# Cache long pour les fichiers versionnés / statiques, cache court pour le HTML
+[[headers]]
+  for = "/css/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# ------------------------------------------------------------------------------
+# Netlify Forms : aucune configuration supplémentaire nécessaire ici, le
+# formulaire est détecté automatiquement grâce à l'attribut data-netlify="true"
+# présent dans index.html (voir <form name="etude-assurance-emprunteur">).
+# Pensez à activer les notifications email dans l'interface Netlify :
+# Site settings > Forms > Form notifications.
+# ------------------------------------------------------------------------------

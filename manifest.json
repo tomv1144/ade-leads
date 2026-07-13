@@ -1,0 +1,19 @@
+{
+  "name": "Klarimo — Étude gratuite assurance emprunteur",
+  "short_name": "Klarimo",
+  "description": "Vérifiez gratuitement si vous pouvez réduire le coût de votre assurance emprunteur, sans changer de banque.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#F8F7F4",
+  "theme_color": "#1A2B4A",
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "/assets/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
