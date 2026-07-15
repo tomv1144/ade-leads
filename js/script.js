@@ -54,6 +54,63 @@
   }
 
   /* --------------------------------------------------------------------
+     1b. ATTRIBUTION DES LEADS (UTM / fbclid)
+     Capture les paramètres utm_* et fbclid présents dans l'URL au moment
+     où le visiteur arrive (typiquement en cliquant sur une pub Meta), les
+     mémorise dans localStorage (pour survivre à une navigation ou un
+     retour ultérieur sur le site avant soumission du formulaire), et
+     remplit le champ caché "source_lead" envoyé avec chaque lead. Ne
+     bloque jamais rien : en l'absence de paramètres, le champ reste vide.
+  -------------------------------------------------------------------- */
+  const LEAD_SOURCE_STORAGE_KEY = "klarimo_lead_source";
+  const UTM_KEYS = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"];
+
+  function captureLeadSource() {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const captured = {};
+      let hasNew = false;
+
+      UTM_KEYS.forEach((key) => {
+        const value = params.get(key);
+        if (value) {
+          captured[key] = value;
+          hasNew = true;
+        }
+      });
+
+      const fbclid = params.get("fbclid");
+      if (fbclid) {
+        captured.fbclid = fbclid;
+        hasNew = true;
+      }
+
+      if (hasNew) {
+        localStorage.setItem(LEAD_SOURCE_STORAGE_KEY, JSON.stringify(captured));
+      }
+
+      const stored = localStorage.getItem(LEAD_SOURCE_STORAGE_KEY);
+      if (!stored) return;
+
+      const data = JSON.parse(stored);
+      const parts = [];
+      if (data.utm_source) parts.push("source=" + data.utm_source);
+      if (data.utm_medium) parts.push("medium=" + data.utm_medium);
+      if (data.utm_campaign) parts.push("campagne=" + data.utm_campaign);
+      if (data.utm_content) parts.push("contenu=" + data.utm_content);
+      if (data.utm_term) parts.push("terme=" + data.utm_term);
+      if (data.fbclid) parts.push("fbclid=" + data.fbclid);
+
+      const sourceField = document.getElementById("source_lead");
+      if (sourceField) sourceField.value = parts.join(" | ");
+    } catch (e) {
+      /* silencieux : l'attribution est un bonus, jamais un blocage du formulaire */
+    }
+  }
+
+  captureLeadSource();
+
+  /* --------------------------------------------------------------------
      2. BLOCS CRÉDITS DYNAMIQUES
      Les 5 blocs existent déjà dans le HTML statique (nécessaire pour que
      Netlify Forms détecte tous les champs au build). On affiche/active

@@ -54,6 +54,7 @@ exports.handler = async function (event) {
       "Créneau de rappel souhaité": payload.creneau_rappel || "",
       "Nombre de crédits": payload.nombre_credits ? parseInt(payload.nombre_credits, 10) : undefined,
       "Détail des crédits": buildDetailCredits(payload),
+      "Source du lead": payload.source_lead || "",
       "Statut": "À contacter",
       "Date de réception": new Date().toISOString(),
     };
