@@ -21,6 +21,8 @@
 
   function showError(input, message) {
     input.setAttribute("aria-invalid", "true");
+    // L'élément d'erreur associé est retrouvé via aria-describedby, ce qui
+    // garde le lien entre le champ et son message valide pour les lecteurs d'écran.
     const describedBy = input.getAttribute("aria-describedby");
     const errId = describedBy ? describedBy.split(" ").find((id) => id.indexOf("err-") === 0) : null;
     const target = errId ? document.getElementById(errId) : null;
@@ -42,8 +44,10 @@
   }
 
   function pushEvent(eventName, params) {
+    // GTM / dataLayer
     window.dataLayer = window.dataLayer || [];
     window.dataLayer.push(Object.assign({ event: eventName }, params || {}));
+    // GA4 direct (si gtag est chargé indépendamment de GTM)
     if (typeof window.gtag === "function") {
       window.gtag("event", eventName, params || {});
     }
@@ -51,6 +55,9 @@
 
   /* --------------------------------------------------------------------
      2. BLOCS CRÉDITS DYNAMIQUES
+     Les 5 blocs existent déjà dans le HTML statique (nécessaire pour que
+     Netlify Forms détecte tous les champs au build). On affiche/active
+     uniquement le nombre de blocs correspondant à la sélection.
   -------------------------------------------------------------------- */
   const nombreCreditsSelect = $("#nombre_credits");
   const creditBlocks = $$(".credit-block");
@@ -109,7 +116,7 @@
       progressLabel.textContent = "Étape 2 sur 2 : comment vous joindre";
       progressBar.setAttribute("aria-valuenow", "2");
       step2.querySelector("input")?.focus();
-      pushEvent("form_step_2_view");
+      pushEvent("form_step_2_view"); // utile pour créer une audience Meta de retargeting "arrivé à l'étape 2"
     }
   }
 
@@ -151,6 +158,7 @@
       if (validateStep1()) {
         goToStep(2);
       } else {
+        // ramène le focus au premier champ en erreur, évite au visiteur de devoir chercher
         const firstError = step1.querySelector('[aria-invalid="true"]');
         if (firstError) firstError.focus();
       }
@@ -260,7 +268,10 @@
 
           // Conversions API (optionnel) : copie côté serveur de l'événement
           // "Lead", en plus du Pixel navigateur. N'échoue jamais le parcours
-          // utilisateur.
+          // utilisateur : si la fonction n'est pas configurée (variables
+          // d'environnement absentes), netlify/functions/capi-lead.js répond
+          // simplement "skipped" sans erreur. On n'attend pas sa réponse
+          // avant de rediriger le visiteur.
           fetch("/.netlify/functions/capi-lead", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -275,7 +286,12 @@
           });
 
           // CRM Airtable (optionnel) : copie chaque lead dans la base
-          // "Leads Klarimo". N'échoue jamais le parcours utilisateur.
+          // "Leads Klarimo" pour pouvoir suivre son statut (à contacter,
+          // contacté, RDV posé, signé...) et le montant gagné. Comme pour
+          // la Conversions API, n'échoue jamais le parcours utilisateur :
+          // si la variable AIRTABLE_TOKEN n'est pas configurée côté
+          // Netlify, netlify/functions/airtable-lead.js répond simplement
+          // "skipped" sans erreur.
           fetch("/.netlify/functions/airtable-lead", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -284,6 +300,11 @@
             /* silencieux : le CRM est un bonus, jamais un blocage */
           });
 
+          // L'événement de conversion "Lead" est déclenché sur merci.html
+          // (page de confirmation), pas ici : ça garantit qu'il ne se
+          // déclenche que lorsque le visiteur a réellement vu la confirmation,
+          // et évite tout risque de double comptage si l'utilisateur
+          // rafraîchit ou revient en arrière avant la redirection.
           window.location.href = "/merci.html";
         })
         .catch(function () {
@@ -303,8 +324,11 @@
      maintenu fixe sur la durée restante (les contrats groupe recalculent
      rarement à la baisse), tandis que le coût en délégation est calculé
      sur le capital moyen restant (capital / 2), car une délégation externe
-     est recalculée chaque année sur le capital réellement dû. Les vrais
-     chiffres, personnalisés, ne sont donnés qu'après l'étude gratuite.
+     est recalculée chaque année sur le capital réellement dû. C'est cet
+     écart de mode de calcul, en plus de l'écart de taux, qui explique
+     l'essentiel de l'économie potentielle. Les vrais chiffres,
+     personnalisés, ne sont donnés qu'après l'étude gratuite avec un
+     conseiller.
   -------------------------------------------------------------------- */
   const simCapitalInput = $("#sim-capital");
   const simDureeInput = $("#sim-duree");
@@ -313,21 +337,59 @@
   const simMontantBas = $("#sim-montant-bas");
   const simMontantHaut = $("#sim-montant-haut");
 
-  const SIM_TAUX_BANCAIRE_BAS = 0.0035;
-  const SIM_TAUX_BANCAIRE_HAUT = 0.0045;
-  const SIM_TAUX_DELEGUE_BAS = 0.0015;
-  const SIM_TAUX_DELEGUE_HAUT = 0.0025;
+  // Taux moyens observés sur le marché (contrat groupe bancaire vs
+  // délégation externe individualisée). À ajuster si les conditions du
+  // marché évoluent significativement.
+  const SIM_TAUX_BANCAIRE_BAS = 0.0035; // 0,35 % par an
+  const SIM_TAUX_BANCAIRE_HAUT = 0.0045; // 0,45 % par an
+  const SIM_TAUX_DELEGUE_BAS = 0.0015; // 0,15 % par an
+  const SIM_TAUX_DELEGUE_HAUT = 0.0025; // 0,25 % par an
   const SIM_CAPITAL_MAX = 2000000;
   const SIM_DUREE_MAX = 35;
+
+  // Coefficient de prudence appliqué à l'ensemble de la fourchette : le
+  // simulateur ne connaît ni l'âge, ni l'état de santé, ni la profession
+  // du visiteur (des facteurs qui influencent fortement le tarif réel en
+  // délégation). On préfère donc afficher une estimation volontairement
+  // conservatrice plutôt que de risquer une déception lors de l'étude
+  // personnalisée : mieux vaut annoncer moins et confirmer plus en RDV.
+  const SIM_COEFFICIENT_PRUDENCE = 0.7;
 
   function parseSimMontant(value) {
     return parseInt((value || "").replace(/[^0-9]/g, ""), 10) || 0;
   }
 
   function formatSimMontant(n) {
+    // Arrondi à la dizaine d'euros la plus proche pour ne pas donner une
+    // fausse impression de précision sur une estimation indicative.
     return new Intl.NumberFormat("fr-FR").format(Math.round(n / 10) * 10);
   }
 
+  function computeSimulateur(capital, duree) {
+    // Coût bancaire : base fixe sur le capital restant dû actuel (les
+    // contrats groupe ne recalculent quasiment jamais la prime à la baisse).
+    // Coût en délégation : base sur le capital moyen restant (capital / 2),
+    // approximation d'un recalcul annuel sur le capital réellement dû.
+    const capitalMoyenDelegue = capital / 2;
+    const coutBancaireBas = capital * SIM_TAUX_BANCAIRE_BAS * duree;
+    const coutBancaireHaut = capital * SIM_TAUX_BANCAIRE_HAUT * duree;
+    const coutDelegueBas = capitalMoyenDelegue * SIM_TAUX_DELEGUE_BAS * duree;
+    const coutDelegueHaut = capitalMoyenDelegue * SIM_TAUX_DELEGUE_HAUT * duree;
+
+    return {
+      economieBasse: Math.max(0, (coutBancaireBas - coutDelegueHaut) * SIM_COEFFICIENT_PRUDENCE),
+      economieHaute: Math.max(0, (coutBancaireHaut - coutDelegueBas) * SIM_COEFFICIENT_PRUDENCE),
+    };
+  }
+
+  function afficherResultatSimulateur(capital, duree) {
+    const { economieBasse, economieHaute } = computeSimulateur(capital, duree);
+    if (simMontantBas) simMontantBas.textContent = formatSimMontant(economieBasse);
+    if (simMontantHaut) simMontantHaut.textContent = formatSimMontant(economieHaute);
+    if (simResultat) simResultat.hidden = false;
+  }
+
+  // Appelée par le bouton : valide et affiche les erreurs le cas échéant.
   function calculerSimulateur() {
     if (!simCapitalInput || !simDureeInput) return;
 
@@ -360,20 +422,29 @@
       return;
     }
 
-    const capitalMoyenDelegue = capital / 2;
-    const coutBancaireBas = capital * SIM_TAUX_BANCAIRE_BAS * duree;
-    const coutBancaireHaut = capital * SIM_TAUX_BANCAIRE_HAUT * duree;
-    const coutDelegueBas = capitalMoyenDelegue * SIM_TAUX_DELEGUE_BAS * duree;
-    const coutDelegueHaut = capitalMoyenDelegue * SIM_TAUX_DELEGUE_HAUT * duree;
+    afficherResultatSimulateur(capital, duree);
 
-    const economieBasse = Math.max(0, coutBancaireBas - coutDelegueHaut);
-    const economieHaute = Math.max(0, coutBancaireHaut - coutDelegueBas);
-
-    if (simMontantBas) simMontantBas.textContent = formatSimMontant(economieBasse);
-    if (simMontantHaut) simMontantHaut.textContent = formatSimMontant(economieHaute);
-    if (simResultat) simResultat.hidden = false;
-
+    // Utile pour mesurer l'engagement avec le simulateur, indépendamment
+    // des soumissions du formulaire principal.
     pushEvent("simulateur_calcul", { capital_restant: capital, duree_restante: duree });
+  }
+
+  // Calcul en direct pendant la saisie : dès que les deux champs contiennent
+  // une valeur plausible, le résultat s'affiche sans attendre de clic, sans
+  // jamais afficher de message d'erreur (ceux-ci restent réservés au bouton,
+  // pour ne pas interrompre la saisie en cours). Un léger débounce évite de
+  // relancer le calcul à chaque frappe.
+  let simLiveTimer = null;
+  function tenterCalculEnDirect() {
+    if (!simCapitalInput || !simDureeInput) return;
+    clearTimeout(simLiveTimer);
+    simLiveTimer = setTimeout(() => {
+      const capital = parseSimMontant(simCapitalInput.value);
+      const duree = parseSimMontant(simDureeInput.value);
+      if (capital > 0 && capital <= SIM_CAPITAL_MAX && duree > 0 && duree <= SIM_DUREE_MAX) {
+        afficherResultatSimulateur(capital, duree);
+      }
+    }, 350);
   }
 
   if (simBtn) {
@@ -384,11 +455,14 @@
     if (!input) return;
     input.addEventListener("input", () => {
       if (input.getAttribute("aria-invalid") === "true") clearError(input);
+      tenterCalculEnDirect();
     });
   });
 
   /* --------------------------------------------------------------------
      7. CTA STICKY MOBILE
+     Apparaît uniquement une fois le formulaire du hero dépassé, pour ne
+     jamais superposer deux CTA à l'écran en même temps.
   -------------------------------------------------------------------- */
   const stickyCta = $("#sticky-cta");
   const heroFormWrapper = $("#form-lead");
@@ -405,11 +479,11 @@
     observer.observe(heroFormWrapper);
   }
 
+  /* Tracking des clics CTA (utile pour comparer la performance de chaque
+     emplacement de bouton en A/B testing). */
   $$("[data-cta]").forEach((cta) => {
     cta.addEventListener("click", () => {
       pushEvent("cta_click", { cta_location: cta.getAttribute("data-cta") });
     });
   });
 })();
-
-

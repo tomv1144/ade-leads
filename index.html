@@ -118,8 +118,43 @@
 
       <div class="hero-content">
         <p class="eyebrow">Cabinet indépendant en assurance emprunteur</p>
-        <h1>Étude gratuite de votre assurance emprunteur</h1>
-        <p class="hero-subtitle">Vérifiez si vous pouvez réduire le coût de votre assurance emprunteur tout en conservant des garanties équivalentes ou supérieures, sans changer de banque.</p>
+        <h1>Combien pouvez-vous économiser sur votre assurance de prêt ?</h1>
+        <p class="hero-subtitle">La plupart des emprunteurs paient depuis des années le tarif fixé par leur banque, sans jamais le renégocier. Simulez votre économie potentielle juste ici, en 30 secondes et sans engagement.</p>
+
+        <div class="simulateur-card simulateur-hero">
+          <p class="simulateur-eyebrow">Résultat instantané, sans engagement</p>
+          <h2 id="simulateur-title">Simulez votre économie</h2>
+
+          <div class="simulateur-fields">
+            <div class="field">
+              <label for="sim-capital">Capital restant dû</label>
+              <div class="input-suffix">
+                <input type="text" inputmode="numeric" autocomplete="off" id="sim-capital" placeholder="150 000" aria-describedby="err-sim-capital">
+                <span class="suffix" aria-hidden="true">€</span>
+              </div>
+              <p class="field-error" role="alert" id="err-sim-capital" hidden></p>
+            </div>
+            <div class="field">
+              <label for="sim-duree">Durée restante du prêt</label>
+              <div class="input-suffix">
+                <input type="text" inputmode="numeric" autocomplete="off" id="sim-duree" placeholder="15" aria-describedby="err-sim-duree">
+                <span class="suffix" aria-hidden="true">ans</span>
+              </div>
+              <p class="field-error" role="alert" id="err-sim-duree" hidden></p>
+            </div>
+          </div>
+
+          <button type="button" class="btn btn-primary simulateur-btn" id="sim-calculer">Calculer mon économie potentielle</button>
+
+          <div class="simulateur-resultat" id="sim-resultat" hidden aria-live="polite">
+            <p class="simulateur-resultat-label">Économie potentielle estimée sur la durée restante de votre prêt</p>
+            <p class="simulateur-resultat-montant"><span id="sim-montant-bas">0</span> € à <span id="sim-montant-haut">0</span> €</p>
+            <p class="simulateur-reassurance">Aucun frais de dossier ne peut vous être facturé pour ce changement (loi Lemoine du 28 février 2022).</p>
+            <a href="#form-lead" class="btn btn-secondary" data-cta="simulateur">Obtenir mon étude gratuite et personnalisée</a>
+          </div>
+
+          <p class="simulateur-disclaimer">Estimation volontairement prudente et non contractuelle : elle ne tient pas compte de votre âge, de votre état de santé ni de votre profession, qui influencent le tarif réel en délégation. Basée sur un taux moyen bancaire de 0,35 % à 0,45 % et un taux moyen en délégation externe de 0,15 % à 0,25 % constatés sur le marché, avec une marge de prudence appliquée. Le montant exact, potentiellement plus élevé, vous est communiqué lors de votre étude gratuite.</p>
+        </div>
 
         <ul class="badge-list" role="list">
           <li class="badge">
@@ -140,8 +175,8 @@
           </li>
         </ul>
 
-        <a href="#form-lead" class="btn btn-primary btn-large hero-cta" data-cta="hero">
-          Demander mon étude gratuite
+        <a href="#form-lead" class="btn btn-ghost hero-cta" data-cta="hero">
+          Ou demandez votre étude directement, sans simuler
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </a>
       </div>
@@ -373,6 +408,12 @@
   </section>
 
   <!-- ====================================================================
+    SIMULATEUR D'ÉCONOMIE : placé juste après le hero pour capter l'intérêt
+    immédiatement, avant toute autre section. Calcul en direct pendant la
+    saisie (en plus du bouton), pour un effet "outil qui répond tout de
+    suite" plutôt qu'un simple formulaire de plus.
+  ==================================================================== -->
+  <!-- ====================================================================
     BANDEAU DE RÉASSURANCE : autorité, sans chiffre invérifiable
   ==================================================================== -->
   <section class="trust-bar" aria-label="Informations sur le cabinet Klarimo">
@@ -441,49 +482,6 @@
       <div class="lemoine-text">
         <p>Depuis la loi n°2022-270 du 28 février 2022, dite « loi Lemoine », il est possible de changer d'assurance emprunteur à tout moment et sans frais, sous réserve du respect des conditions prévues par la loi, notamment l'équivalence du niveau de garanties avec votre contrat actuel.</p>
         <p>Il n'y a donc plus de date anniversaire à surveiller ni de fenêtre de tir à ne pas manquer. Nos conseillers vérifient avec vous, gratuitement, si votre situation permet d'en bénéficier.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- ====================================================================
-    SIMULATEUR D'ÉCONOMIE
-  ==================================================================== -->
-  <section class="simulateur" aria-labelledby="simulateur-title">
-    <div class="container simulateur-container">
-      <p class="eyebrow">Estimation en 30 secondes</p>
-      <h2 id="simulateur-title">Combien pourriez-vous économiser en changeant d'assurance ?</h2>
-      <p class="simulateur-intro">Indiquez le capital restant dû de votre prêt et le nombre d'années qu'il vous reste à rembourser : vous obtenez une fourchette réaliste, basée sur les taux moyens observés sur le marché entre un contrat bancaire classique et une délégation externe.</p>
-
-      <div class="simulateur-card">
-        <div class="simulateur-fields">
-          <div class="field">
-            <label for="sim-capital">Capital restant dû</label>
-            <div class="input-suffix">
-              <input type="text" inputmode="numeric" autocomplete="off" id="sim-capital" placeholder="150 000" aria-describedby="err-sim-capital">
-              <span class="suffix" aria-hidden="true">€</span>
-            </div>
-            <p class="field-error" role="alert" id="err-sim-capital" hidden></p>
-          </div>
-          <div class="field">
-            <label for="sim-duree">Durée restante du prêt</label>
-            <div class="input-suffix">
-              <input type="text" inputmode="numeric" autocomplete="off" id="sim-duree" placeholder="15" aria-describedby="err-sim-duree">
-              <span class="suffix" aria-hidden="true">ans</span>
-            </div>
-            <p class="field-error" role="alert" id="err-sim-duree" hidden></p>
-          </div>
-        </div>
-
-        <button type="button" class="btn btn-primary simulateur-btn" id="sim-calculer">Calculer mon économie potentielle</button>
-
-        <div class="simulateur-resultat" id="sim-resultat" hidden aria-live="polite">
-          <p class="simulateur-resultat-label">Économie potentielle sur la durée restante de votre prêt</p>
-          <p class="simulateur-resultat-montant"><span id="sim-montant-bas">0</span> € à <span id="sim-montant-haut">0</span> €</p>
-          <p class="simulateur-reassurance">Aucun frais de dossier ne peut vous être facturé pour ce changement (loi Lemoine du 28 février 2022).</p>
-          <a href="#form-lead" class="btn btn-secondary" data-cta="simulateur">Obtenir mon étude gratuite et personnalisée</a>
-        </div>
-
-        <p class="simulateur-disclaimer">Estimation indicative et non contractuelle, basée sur un taux moyen bancaire de 0,35 % à 0,45 % et un taux moyen en délégation externe de 0,15 % à 0,25 %, constatés sur le marché. Le contrat bancaire est calculé sur votre capital restant dû actuel maintenu fixe, tandis qu'une délégation externe est recalculée chaque année sur le capital réellement dû, ce qui explique l'essentiel de l'écart. Le montant exact dépend aussi de votre âge, de votre état de santé et de votre profession : il vous est communiqué précisément lors de votre étude gratuite.</p>
       </div>
     </div>
   </section>
@@ -685,5 +683,4 @@
 </script>
 </body>
 </html>
-
-                                                                                                                                                                                                                                                                                                                                                                                                                                                       
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            

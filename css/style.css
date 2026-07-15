@@ -496,6 +496,26 @@ input[aria-invalid="true"], select[aria-invalid="true"] { border-color: var(--co
 .simulateur-resultat .btn { display: inline-block; }
 .simulateur-disclaimer { font-size: 0.76rem; color: var(--color-text-muted); margin: var(--space-sm) 0 0; text-align: center; }
 
+/* Version compacte du simulateur intégrée directement dans le hero, pour
+   qu'elle soit visible sans avoir à faire défiler la page (au même titre
+   que le formulaire de contact, déjà présent dans le hero). */
+.simulateur-hero {
+  border-color: var(--color-gold);
+  box-shadow: var(--shadow-md);
+  margin: var(--space-md) 0;
+  text-align: left;
+}
+.simulateur-eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--color-gold);
+  margin-bottom: 4px;
+}
+.simulateur-hero h2 { font-size: 1.2rem; margin-bottom: var(--space-sm); }
+.simulateur-hero .simulateur-disclaimer { text-align: left; }
+
 /* ---------------------------------------------------------------------------
    9. TIMELINE
 --------------------------------------------------------------------------- */
