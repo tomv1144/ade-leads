@@ -47,7 +47,17 @@
 
       <p class="eyebrow">Demande bien reçue</p>
       <h1>Merci, votre demande d'étude gratuite est enregistrée</h1>
-      <p class="hero-subtitle">Un conseiller Klarimo dédié va prendre connaissance de votre dossier et vous recontacter prochainement, au créneau que vous avez indiqué si vous en avez précisé un.</p>
+      <p class="hero-subtitle" id="merci-subtitle">Un conseiller Klarimo dédié va prendre connaissance de votre dossier et vous recontacter prochainement, au créneau que vous avez indiqué si vous en avez précisé un.</p>
+
+      <p style="margin-top:var(--space-md);">
+        <a href="https://wa.me/33677523916?text=Bonjour%2C%20je%20viens%20de%20faire%20une%20demande%20d'%C3%A9tude%20sur%20klarimo.fr%2C%20je%20souhaite%20%C3%A9changer%20avec%20vous."
+           class="btn btn-secondary"
+           target="_blank" rel="noopener noreferrer"
+           style="display:inline-flex; align-items:center; gap:8px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.1-1.6-.8-1.9-.9-.2-.1-.4-.1-.6.1-.2.3-.7.9-.8 1-.2.2-.3.2-.5.1-1.5-.7-2.5-1.3-3.5-3-.3-.5.3-.4.8-1.4.1-.2 0-.3 0-.5-.1-.1-.6-1.4-.8-1.9-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3 4.8 4.3.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.5-.1 1.6-.7 1.9-1.3.2-.6.2-1.1.2-1.3-.1-.1-.3-.2-.5-.3Z"/><path d="M12 2C6.5 2 2 6.5 2 12c0 1.8.5 3.6 1.4 5.1L2 22l5.1-1.3C8.5 21.5 10.2 22 12 22c5.5 0 10-4.5 10-10S17.5 2 12 2Zm0 18c-1.6 0-3.2-.4-4.5-1.2l-.3-.2-3 .8.8-3-.2-.3C4 14.7 3.6 13.4 3.6 12c0-4.6 3.8-8.4 8.4-8.4s8.4 3.8 8.4 8.4-3.8 8.4-8.4 8.4Z"/></svg>
+          Discuter sur WhatsApp
+        </a>
+      </p>
 
       <div class="form-card" style="margin-top: var(--space-lg);">
         <h2 style="font-size:1.3rem;">Pour gagner du temps lors de l'appel</h2>
@@ -100,6 +110,27 @@
   </div>
 </div>
 
+<script>
+  // Adapte le message de la page de remerciement selon le parcours choisi
+  // (rappel classique vs transmission directe), mémorisé côté navigateur
+  // juste avant la redirection depuis le formulaire. Lecture unique :
+  // la clé est retirée aussitôt pour ne pas fausser une visite ultérieure.
+  (function () {
+    try {
+      const parcours = sessionStorage.getItem("klarimo_parcours");
+      sessionStorage.removeItem("klarimo_parcours");
+      if (parcours === "direct") {
+        const subtitle = document.getElementById("merci-subtitle");
+        if (subtitle) {
+          subtitle.textContent =
+            "Nous préparons votre devis personnalisé à partir des informations et documents transmis. Vous serez recontacté par email dès qu'il sera prêt, sans appel nécessaire de votre part.";
+        }
+      }
+    } catch (e) {
+      /* silencieux : purement cosmétique, jamais bloquant */
+    }
+  })();
+</script>
 <script src="js/consent.js" defer></script>
 <script>
   window.addEventListener("DOMContentLoaded", function () {

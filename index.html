@@ -368,7 +368,23 @@
                 <p class="field-error" role="alert" id="err-email" hidden></p>
               </div>
 
-              <div class="field">
+              <div class="field-group parcours-choice">
+                <p class="parcours-choice-label">Comment souhaitez-vous procéder ?</p>
+                <div class="parcours-options" role="radiogroup" aria-label="Choix du parcours">
+                  <label class="parcours-option">
+                    <input type="radio" name="parcours_souhaite" value="rappel" checked>
+                    <span class="parcours-option-title">Être rappelé(e)</span>
+                    <span class="parcours-option-desc">Un conseiller vous appelle pour recueillir vos informations.</span>
+                  </label>
+                  <label class="parcours-option">
+                    <input type="radio" name="parcours_souhaite" value="direct">
+                    <span class="parcours-option-title">Transmettre directement mes informations</span>
+                    <span class="parcours-option-desc">Vous répondez à quelques questions et transmettez vos documents maintenant, sans attendre d'appel.</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="field" id="bloc-parcours-rappel">
                 <label for="creneau_rappel">Créneau préféré pour être rappelé <span class="optional">(facultatif)</span></label>
                 <select id="creneau_rappel" name="creneau_rappel">
                   <option value="Peu importe" selected>Peu importe</option>
@@ -376,6 +392,339 @@
                   <option value="Après-midi">Après-midi</option>
                   <option value="Soir">Soir</option>
                 </select>
+              </div>
+
+              <div class="bloc-parcours-direct" id="bloc-parcours-direct" hidden>
+                <p class="parcours-direct-intro">Ces informations permettent de préparer votre devis sans appel préalable. Elles restent strictement confidentielles et les documents transmis sont supprimés après votre étude.</p>
+
+                <fieldset class="sous-bloc">
+                  <legend>Votre situation personnelle</legend>
+
+                  <div class="field-row">
+                    <div class="field">
+                      <label for="date_naissance">Date de naissance</label>
+                      <input type="date" id="date_naissance" name="date_naissance" aria-describedby="err-date_naissance">
+                      <p class="field-error" role="alert" id="err-date_naissance" hidden></p>
+                    </div>
+                    <div class="field">
+                      <label for="lieu_naissance">Lieu de naissance</label>
+                      <input type="text" id="lieu_naissance" name="lieu_naissance" autocomplete="off">
+                    </div>
+                  </div>
+
+                  <div class="field">
+                    <label for="nationalite">Nationalité</label>
+                    <input type="text" id="nationalite" name="nationalite" value="Française" autocomplete="off">
+                  </div>
+
+                  <div class="field">
+                    <label for="categorie_pro">Catégorie professionnelle</label>
+                    <select id="categorie_pro" name="categorie_pro">
+                      <option value="">Sélectionnez</option>
+                      <option value="Cadre">Cadre</option>
+                      <option value="Salarié">Salarié</option>
+                      <option value="TNS">TNS (travailleur non salarié)</option>
+                      <option value="Fonctionnaire">Fonctionnaire</option>
+                    </select>
+                  </div>
+
+                  <div class="field" id="bloc-categorie-fonctionnaire" hidden>
+                    <label for="categorie_fonctionnaire">Catégorie de fonctionnaire</label>
+                    <select id="categorie_fonctionnaire" name="categorie_fonctionnaire">
+                      <option value="">Sélectionnez</option>
+                      <option value="Catégorie A">Catégorie A</option>
+                      <option value="Catégorie B">Catégorie B</option>
+                      <option value="Catégorie C">Catégorie C</option>
+                    </select>
+                  </div>
+
+                  <div class="field-row" id="bloc-tns" hidden>
+                    <div class="field">
+                      <label for="siren">SIREN</label>
+                      <input type="text" id="siren" name="siren" inputmode="numeric" autocomplete="off">
+                    </div>
+                    <div class="field">
+                      <label for="code_ape">Code APE</label>
+                      <input type="text" id="code_ape" name="code_ape" autocomplete="off">
+                    </div>
+                  </div>
+
+                  <div class="field">
+                    <label for="km_professionnel">Kilométrage professionnel annuel <span class="optional">(hors trajet domicile-travail)</span></label>
+                    <input type="number" id="km_professionnel" name="km_professionnel" min="0" inputmode="numeric" autocomplete="off">
+                  </div>
+
+                  <div class="field-row">
+                    <div class="field">
+                      <label for="profession_manuelle">Profession manuelle</label>
+                      <select id="profession_manuelle" name="profession_manuelle">
+                        <option value="">Sélectionnez</option>
+                        <option value="Oui">Oui</option>
+                        <option value="Non">Non</option>
+                      </select>
+                    </div>
+                    <div class="field">
+                      <label for="produits_dangereux">Manipulation de produits dangereux</label>
+                      <select id="produits_dangereux" name="produits_dangereux">
+                        <option value="">Sélectionnez</option>
+                        <option value="Oui">Oui</option>
+                        <option value="Non">Non</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="field">
+                    <label for="activite_hauteur">Activité professionnelle à plus de 15 m de hauteur</label>
+                    <select id="activite_hauteur" name="activite_hauteur">
+                      <option value="">Sélectionnez</option>
+                      <option value="Oui">Oui</option>
+                      <option value="Non">Non</option>
+                    </select>
+                  </div>
+
+                  <div class="field">
+                    <label for="situation_familiale">Situation familiale</label>
+                    <select id="situation_familiale" name="situation_familiale">
+                      <option value="">Sélectionnez</option>
+                      <option value="Célibataire">Célibataire</option>
+                      <option value="Marié(e)">Marié(e)</option>
+                      <option value="Pacsé(e)">Pacsé(e)</option>
+                      <option value="Divorcé(e)">Divorcé(e)</option>
+                      <option value="Veuf(ve)">Veuf(ve)</option>
+                    </select>
+                  </div>
+
+                  <div class="field" id="bloc-regime-matrimonial" hidden>
+                    <label for="regime_matrimonial">Régime matrimonial</label>
+                    <select id="regime_matrimonial" name="regime_matrimonial">
+                      <option value="">Sélectionnez</option>
+                      <option value="Communauté légale (sans contrat)">Communauté légale (sans contrat)</option>
+                      <option value="Séparation de biens">Séparation de biens</option>
+                      <option value="Communauté universelle">Communauté universelle</option>
+                      <option value="Participation aux acquêts">Participation aux acquêts</option>
+                    </select>
+                  </div>
+
+                  <div class="field" id="bloc-regime-pacs" hidden>
+                    <label for="regime_pacs">Régime du PACS</label>
+                    <select id="regime_pacs" name="regime_pacs">
+                      <option value="">Sélectionnez</option>
+                      <option value="Séparation de biens (régime légal)">Séparation de biens (régime légal)</option>
+                      <option value="Indivision">Indivision</option>
+                    </select>
+                  </div>
+
+                  <div class="field-row">
+                    <div class="field">
+                      <label for="nombre_enfants">Nombre d'enfants</label>
+                      <input type="number" id="nombre_enfants" name="nombre_enfants" min="0" inputmode="numeric" autocomplete="off">
+                    </div>
+                    <div class="field">
+                      <label for="enfants_charge">Dont enfants à charge</label>
+                      <input type="number" id="enfants_charge" name="enfants_charge" min="0" inputmode="numeric" autocomplete="off">
+                    </div>
+                  </div>
+
+                  <div class="field">
+                    <label for="nicotine_24mois">Consommation de nicotine dans les 24 derniers mois</label>
+                    <select id="nicotine_24mois" name="nicotine_24mois">
+                      <option value="">Sélectionnez</option>
+                      <option value="Oui">Oui</option>
+                      <option value="Non">Non</option>
+                    </select>
+                  </div>
+
+                  <div class="field-row">
+                    <div class="field">
+                      <label for="sport_pratique">Sport pratiqué <span class="optional">(facultatif, sinon laissez vide)</span></label>
+                      <input type="text" id="sport_pratique" name="sport_pratique" autocomplete="off">
+                    </div>
+                    <div class="field">
+                      <label for="licence_club">Licence en club</label>
+                      <select id="licence_club" name="licence_club">
+                        <option value="">Sélectionnez</option>
+                        <option value="Oui">Oui</option>
+                        <option value="Non">Non</option>
+                      </select>
+                    </div>
+                  </div>
+                </fieldset>
+
+                <div class="field field-checkbox">
+                  <input type="checkbox" id="co_emprunteur_present" name="co_emprunteur_present" value="oui">
+                  <label for="co_emprunteur_present">Un co-emprunteur est concerné par ce dossier</label>
+                </div>
+
+                <fieldset class="sous-bloc" id="bloc-co-emprunteur" hidden>
+                  <legend>Situation du co-emprunteur</legend>
+
+                  <div class="field-row">
+                    <div class="field">
+                      <label for="co_prenom">Prénom du co-emprunteur</label>
+                      <input type="text" id="co_prenom" name="co_prenom" autocomplete="off">
+                    </div>
+                    <div class="field">
+                      <label for="co_nom">Nom du co-emprunteur</label>
+                      <input type="text" id="co_nom" name="co_nom" autocomplete="off">
+                    </div>
+                  </div>
+
+                  <div class="field-row">
+                    <div class="field">
+                      <label for="co_date_naissance">Date de naissance</label>
+                      <input type="date" id="co_date_naissance" name="co_date_naissance">
+                    </div>
+                    <div class="field">
+                      <label for="co_lieu_naissance">Lieu de naissance</label>
+                      <input type="text" id="co_lieu_naissance" name="co_lieu_naissance" autocomplete="off">
+                    </div>
+                  </div>
+
+                  <div class="field">
+                    <label for="co_nationalite">Nationalité</label>
+                    <input type="text" id="co_nationalite" name="co_nationalite" value="Française" autocomplete="off">
+                  </div>
+
+                  <div class="field">
+                    <label for="co_categorie_pro">Catégorie professionnelle</label>
+                    <select id="co_categorie_pro" name="co_categorie_pro">
+                      <option value="">Sélectionnez</option>
+                      <option value="Cadre">Cadre</option>
+                      <option value="Salarié">Salarié</option>
+                      <option value="TNS">TNS (travailleur non salarié)</option>
+                      <option value="Fonctionnaire">Fonctionnaire</option>
+                    </select>
+                  </div>
+
+                  <div class="field" id="bloc-co-categorie-fonctionnaire" hidden>
+                    <label for="co_categorie_fonctionnaire">Catégorie de fonctionnaire</label>
+                    <select id="co_categorie_fonctionnaire" name="co_categorie_fonctionnaire">
+                      <option value="">Sélectionnez</option>
+                      <option value="Catégorie A">Catégorie A</option>
+                      <option value="Catégorie B">Catégorie B</option>
+                      <option value="Catégorie C">Catégorie C</option>
+                    </select>
+                  </div>
+
+                  <div class="field-row" id="bloc-co-tns" hidden>
+                    <div class="field">
+                      <label for="co_siren">SIREN</label>
+                      <input type="text" id="co_siren" name="co_siren" inputmode="numeric" autocomplete="off">
+                    </div>
+                    <div class="field">
+                      <label for="co_code_ape">Code APE</label>
+                      <input type="text" id="co_code_ape" name="co_code_ape" autocomplete="off">
+                    </div>
+                  </div>
+
+                  <div class="field">
+                    <label for="co_km_professionnel">Kilométrage professionnel annuel <span class="optional">(hors trajet domicile-travail)</span></label>
+                    <input type="number" id="co_km_professionnel" name="co_km_professionnel" min="0" inputmode="numeric" autocomplete="off">
+                  </div>
+
+                  <div class="field-row">
+                    <div class="field">
+                      <label for="co_profession_manuelle">Profession manuelle</label>
+                      <select id="co_profession_manuelle" name="co_profession_manuelle">
+                        <option value="">Sélectionnez</option>
+                        <option value="Oui">Oui</option>
+                        <option value="Non">Non</option>
+                      </select>
+                    </div>
+                    <div class="field">
+                      <label for="co_produits_dangereux">Manipulation de produits dangereux</label>
+                      <select id="co_produits_dangereux" name="co_produits_dangereux">
+                        <option value="">Sélectionnez</option>
+                        <option value="Oui">Oui</option>
+                        <option value="Non">Non</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="field">
+                    <label for="co_activite_hauteur">Activité professionnelle à plus de 15 m de hauteur</label>
+                    <select id="co_activite_hauteur" name="co_activite_hauteur">
+                      <option value="">Sélectionnez</option>
+                      <option value="Oui">Oui</option>
+                      <option value="Non">Non</option>
+                    </select>
+                  </div>
+
+                  <div class="field">
+                    <label for="co_situation_familiale">Situation familiale</label>
+                    <select id="co_situation_familiale" name="co_situation_familiale">
+                      <option value="">Sélectionnez</option>
+                      <option value="Célibataire">Célibataire</option>
+                      <option value="Marié(e)">Marié(e)</option>
+                      <option value="Pacsé(e)">Pacsé(e)</option>
+                      <option value="Divorcé(e)">Divorcé(e)</option>
+                      <option value="Veuf(ve)">Veuf(ve)</option>
+                    </select>
+                  </div>
+
+                  <div class="field" id="bloc-co-regime-matrimonial" hidden>
+                    <label for="co_regime_matrimonial">Régime matrimonial</label>
+                    <select id="co_regime_matrimonial" name="co_regime_matrimonial">
+                      <option value="">Sélectionnez</option>
+                      <option value="Communauté légale (sans contrat)">Communauté légale (sans contrat)</option>
+                      <option value="Séparation de biens">Séparation de biens</option>
+                      <option value="Communauté universelle">Communauté universelle</option>
+                      <option value="Participation aux acquêts">Participation aux acquêts</option>
+                    </select>
+                  </div>
+
+                  <div class="field" id="bloc-co-regime-pacs" hidden>
+                    <label for="co_regime_pacs">Régime du PACS</label>
+                    <select id="co_regime_pacs" name="co_regime_pacs">
+                      <option value="">Sélectionnez</option>
+                      <option value="Séparation de biens (régime légal)">Séparation de biens (régime légal)</option>
+                      <option value="Indivision">Indivision</option>
+                    </select>
+                  </div>
+
+                  <div class="field">
+                    <label for="co_nicotine_24mois">Consommation de nicotine dans les 24 derniers mois</label>
+                    <select id="co_nicotine_24mois" name="co_nicotine_24mois">
+                      <option value="">Sélectionnez</option>
+                      <option value="Oui">Oui</option>
+                      <option value="Non">Non</option>
+                    </select>
+                  </div>
+
+                  <div class="field-row">
+                    <div class="field">
+                      <label for="co_sport_pratique">Sport pratiqué <span class="optional">(facultatif, sinon laissez vide)</span></label>
+                      <input type="text" id="co_sport_pratique" name="co_sport_pratique" autocomplete="off">
+                    </div>
+                    <div class="field">
+                      <label for="co_licence_club">Licence en club</label>
+                      <select id="co_licence_club" name="co_licence_club">
+                        <option value="">Sélectionnez</option>
+                        <option value="Oui">Oui</option>
+                        <option value="Non">Non</option>
+                      </select>
+                    </div>
+                  </div>
+                </fieldset>
+
+                <fieldset class="sous-bloc">
+                  <legend>Vos documents</legend>
+                  <p class="upload-intro">Fichiers PDF ou photo, 5 Mo maximum chacun. Facultatif à cette étape : vous pouvez aussi les transmettre plus tard par WhatsApp ou email.</p>
+
+                  <div class="field field-upload">
+                    <label for="doc_offre_pret">Offre de prêt définitive</label>
+                    <input type="file" id="doc_offre_pret" name="doc_offre_pret" accept=".pdf,.jpg,.jpeg,.png">
+                    <p class="field-error" role="alert" id="err-doc_offre_pret" hidden></p>
+                  </div>
+
+                  <div class="field field-upload">
+                    <label for="doc_tableau_amortissement">Tableau d'amortissement définitif</label>
+                    <input type="file" id="doc_tableau_amortissement" name="doc_tableau_amortissement" accept=".pdf,.jpg,.jpeg,.png">
+                    <p class="field-error" role="alert" id="err-doc_tableau_amortissement" hidden></p>
+                  </div>
+
+                  <p class="upload-status" id="upload-status" hidden></p>
+                </fieldset>
               </div>
 
               <div class="field field-checkbox">
