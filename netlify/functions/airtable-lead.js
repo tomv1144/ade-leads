@@ -57,6 +57,11 @@ exports.handler = async function (event) {
       "Source du lead": payload.source_lead || "",
       "Statut": "À contacter",
       "Date de réception": new Date().toISOString(),
+      // Assignation automatique : déclenche la notification push native
+      // Airtable sur le téléphone (l'app Airtable notifie nativement quand
+      // un collaborateur est assigné à une fiche, contrairement à une simple
+      // création de fiche qui ne notifie personne par défaut).
+      "Assigné à": { email: "tom.vinet11@gmail.com" },
     };
 
     // Retire les champs vides/undefined pour éviter les erreurs de type Airtable
