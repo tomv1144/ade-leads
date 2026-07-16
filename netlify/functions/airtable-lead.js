@@ -3,7 +3,10 @@
 // (base "Leads Klarimo"), en complément de Netlify Forms.
 //
 // Objectif : avoir une vue "CRM" du lead (statut, montant gagné, notes) en
-// plus de la simple liste brute de Netlify Forms.
+// plus de la simple liste brute de Netlify Forms. Gère aussi bien le
+// parcours "rappel" classique (peu de champs) que le parcours "transmission
+// directe" (état civil complet, profession, situation familiale, documents),
+// voir js/script.js section 3b pour le détail des deux parcours.
 //
 // POUR ACTIVER CETTE FONCTION :
 //   1. Créer un token d'accès personnel Airtable : airtable.com/create/tokens
@@ -22,6 +25,11 @@
 // raison quelconque (format refusé par l'API, droits insuffisants...),
 // la fiche du lead est déjà enregistrée et reste intacte : on ne risque
 // jamais de perdre un lead à cause de la fonctionnalité de notification.
+//
+// Le recordId de la fiche créée est renvoyé dans la réponse (champ
+// "recordId") : le parcours "transmission directe" en a besoin côté
+// navigateur pour pouvoir attacher ensuite les documents transmis (voir
+// netlify/functions/upload-document.mjs).
 // ============================================================================
 
 const AIRTABLE_BASE_ID = "appBngDi0WIiKbQZc";
@@ -40,6 +48,43 @@ function buildDetailCredits(payload) {
   return lines.join("\n");
 }
 
+// Consolide toutes les informations du co-emprunteur (si présent) en un seul
+// bloc de texte lisible, plutôt que de dupliquer une quinzaine de champs
+// Airtable. Le formulaire, lui, continue de poser chaque question
+// individuellement pour une meilleure expérience de saisie.
+function buildInfosCoEmprunteur(payload) {
+  const present = payload.co_emprunteur_present === "oui";
+  if (!present) return "";
+
+  const lignes = [];
+  const push = (label, value) => {
+    if (value) lignes.push(label + " : " + value);
+  };
+
+  push("Prénom", payload.co_prenom);
+  push("Nom", payload.co_nom);
+  push("Date de naissance", payload.co_date_naissance);
+  push("Âge", payload.co_age);
+  push("Lieu de naissance", payload.co_lieu_naissance);
+  push("Nationalité", payload.co_nationalite);
+  push("Catégorie professionnelle", payload.co_categorie_pro);
+  push("Catégorie fonctionnaire", payload.co_categorie_fonctionnaire);
+  push("SIREN", payload.co_siren);
+  push("Code APE", payload.co_code_ape);
+  push("Situation familiale", payload.co_situation_familiale);
+  push("Régime matrimonial", payload.co_regime_matrimonial);
+  push("Régime du PACS", payload.co_regime_pacs);
+  push("Nicotine (24 derniers mois)", payload.co_nicotine_24mois);
+  push("Sport pratiqué", payload.co_sport_pratique);
+  push("Licence sportive en club", payload.co_licence_club);
+  push("Kilométrage professionnel annuel", payload.co_km_professionnel ? payload.co_km_professionnel + " km/an" : "");
+  push("Profession manuelle", payload.co_profession_manuelle);
+  push("Manipulation de produits dangereux", payload.co_produits_dangereux);
+  push("Activité à plus de 15m de hauteur", payload.co_activite_hauteur);
+
+  return lignes.join("\n");
+}
+
 exports.handler = async function (event) {
   if (event.httpMethod !== "POST") {
     return { statusCode: 405, body: "Method Not Allowed" };
@@ -53,6 +98,8 @@ exports.handler = async function (event) {
 
   const payload = JSON.parse(event.body || "{}");
 
+  const parcoursChoisi = payload.parcours_souhaite === "direct" ? "Transmission directe" : "Rappel classique";
+
   const fields = {
     "Prénom": payload.prenom || "",
     "Nom": payload.nom || "",
@@ -64,6 +111,33 @@ exports.handler = async function (event) {
     "Source du lead": payload.source_lead || "",
     "Statut": "À contacter",
     "Date de réception": new Date().toISOString(),
+    "Parcours choisi": parcoursChoisi,
+
+    // Champs du parcours "transmission directe" : simplement absents ou
+    // vides pour un lead venu du parcours "rappel" classique, ce qui ne
+    // pose aucun problème (retirés ci-dessous avant l'envoi à Airtable).
+    "Date de naissance": payload.date_naissance || undefined,
+    "Âge": payload.age ? parseInt(payload.age, 10) : undefined,
+    "Lieu de naissance": payload.lieu_naissance || "",
+    "Nationalité": payload.nationalite || "",
+    "Catégorie professionnelle": payload.categorie_pro || undefined,
+    "Catégorie fonctionnaire": payload.categorie_fonctionnaire || undefined,
+    "SIREN": payload.siren || "",
+    "Code APE": payload.code_ape || "",
+    "Situation familiale": payload.situation_familiale || undefined,
+    "Régime matrimonial": payload.regime_matrimonial || undefined,
+    "Régime du PACS": payload.regime_pacs || undefined,
+    "Nombre d'enfants": payload.nombre_enfants ? parseInt(payload.nombre_enfants, 10) : undefined,
+    "Enfants à charge": payload.enfants_charge ? parseInt(payload.enfants_charge, 10) : undefined,
+    "Nicotine (24 derniers mois)": payload.nicotine_24mois || undefined,
+    "Sport pratiqué": payload.sport_pratique || "",
+    "Licence sportive en club": payload.licence_club || undefined,
+    "Kilométrage professionnel annuel (km)": payload.km_professionnel ? parseInt(payload.km_professionnel, 10) : undefined,
+    "Profession manuelle": payload.profession_manuelle || undefined,
+    "Manipulation produits dangereux": payload.produits_dangereux || undefined,
+    "Activité en hauteur (+15m)": payload.activite_hauteur || undefined,
+    "Co-emprunteur": payload.co_emprunteur_present === "oui",
+    "Informations co-emprunteur": buildInfosCoEmprunteur(payload),
   };
 
   // Retire les champs vides/undefined pour éviter les erreurs de type Airtable
@@ -128,5 +202,5 @@ exports.handler = async function (event) {
     }
   }
 
-  return { statusCode: 200, body: JSON.stringify({ created: true, id: newRecordId }) };
+  return { statusCode: 200, body: JSON.stringify({ created: true, id: newRecordId, recordId: newRecordId }) };
 };

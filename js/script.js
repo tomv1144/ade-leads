@@ -2,10 +2,12 @@
    KLARIMO : script.js (vanilla JS, aucune dépendance)
    Sommaire :
    1. Utilitaires
+   1b. Attribution des leads (UTM / fbclid)
    2. Blocs crédits dynamiques (nombre_credits)
    3. Navigation du formulaire en 2 étapes
+   3b. Parcours détaillé (rappel vs transmission directe) + conditions
    4. Validation instantanée
-   5. Soumission Netlify Forms en AJAX + tracking
+   5. Soumission Netlify Forms en AJAX + tracking + upload documents
    6. Simulateur d'économie
    7. CTA sticky mobile (IntersectionObserver)
 ============================================================================ */
@@ -229,6 +231,287 @@
   }
 
   /* --------------------------------------------------------------------
+     3b. PARCOURS DÉTAILLÉ : "être rappelé" (par défaut) vs "transmettre
+     directement mes informations et documents". Cette deuxième option
+     répond aux prospects qui ne veulent ni appel ni visio, mais acceptent
+     de tout transmettre par écrit pour recevoir un devis sans échange oral.
+
+     Chaque sous-bloc conditionnel (fonctionnaire, TNS, régime matrimonial,
+     PACS, co-emprunteur, et la même logique en cascade pour le
+     co-emprunteur) suit le même principe que les blocs crédit : masqué =
+     désactivé, pour ne jamais soumettre une valeur obsolète ou non
+     pertinente. Activer un bloc parent réactive tous ses champs enfants
+     en masse ; on ré-applique donc systématiquement les conditions
+     imbriquées juste après, pour ne pas ré-afficher à tort un sous-bloc
+     qui ne correspond plus à la sélection actuelle.
+  -------------------------------------------------------------------- */
+  function setBlockVisibility(blockEl, show) {
+    if (!blockEl) return;
+    blockEl.hidden = !show;
+    $$("input, select, textarea", blockEl).forEach(function (field) {
+      field.disabled = !show;
+    });
+  }
+
+  const parcoursRadios = $$('input[name="parcours_souhaite"]');
+  const blocParcoursRappel = $("#bloc-parcours-rappel");
+  const blocParcoursDirect = $("#bloc-parcours-direct");
+
+  const categoriePro = $("#categorie_pro");
+  const blocCategorieFonctionnaire = $("#bloc-categorie-fonctionnaire");
+  const blocTns = $("#bloc-tns");
+
+  const situationFamiliale = $("#situation_familiale");
+  const blocRegimeMatrimonial = $("#bloc-regime-matrimonial");
+  const blocRegimePacs = $("#bloc-regime-pacs");
+
+  const coEmprunteurPresent = $("#co_emprunteur_present");
+  const blocCoEmprunteur = $("#bloc-co-emprunteur");
+
+  const coCategoriePro = $("#co_categorie_pro");
+  const blocCoCategorieFonctionnaire = $("#bloc-co-categorie-fonctionnaire");
+  const blocCoTns = $("#bloc-co-tns");
+
+  const coSituationFamiliale = $("#co_situation_familiale");
+  const blocCoRegimeMatrimonial = $("#bloc-co-regime-matrimonial");
+  const blocCoRegimePacs = $("#bloc-co-regime-pacs");
+
+  function updateCategorieProVisibility() {
+    if (!categoriePro) return;
+    setBlockVisibility(blocCategorieFonctionnaire, categoriePro.value === "Fonctionnaire");
+    setBlockVisibility(blocTns, categoriePro.value === "TNS");
+  }
+
+  function updateSituationFamilialeVisibility() {
+    if (!situationFamiliale) return;
+    setBlockVisibility(blocRegimeMatrimonial, situationFamiliale.value === "Marié(e)");
+    setBlockVisibility(blocRegimePacs, situationFamiliale.value === "Pacsé(e)");
+  }
+
+  function updateCoCategorieProVisibility() {
+    if (!coCategoriePro) return;
+    setBlockVisibility(blocCoCategorieFonctionnaire, coCategoriePro.value === "Fonctionnaire");
+    setBlockVisibility(blocCoTns, coCategoriePro.value === "TNS");
+  }
+
+  function updateCoSituationFamilialeVisibility() {
+    if (!coSituationFamiliale) return;
+    setBlockVisibility(blocCoRegimeMatrimonial, coSituationFamiliale.value === "Marié(e)");
+    setBlockVisibility(blocCoRegimePacs, coSituationFamiliale.value === "Pacsé(e)");
+  }
+
+  function updateCoEmprunteurVisibility() {
+    if (!coEmprunteurPresent) return;
+    const show = coEmprunteurPresent.checked;
+    setBlockVisibility(blocCoEmprunteur, show);
+    if (show) {
+      // Ré-applique les sous-conditions du bloc co-emprunteur, qui viennent
+      // d'être réactivées en masse par setBlockVisibility ci-dessus.
+      updateCoCategorieProVisibility();
+      updateCoSituationFamilialeVisibility();
+    }
+  }
+
+  function updateParcoursVisibility() {
+    const selected = parcoursRadios.find(function (r) {
+      return r.checked;
+    });
+    const isDirect = !!selected && selected.value === "direct";
+    setBlockVisibility(blocParcoursRappel, !isDirect);
+    setBlockVisibility(blocParcoursDirect, isDirect);
+    if (isDirect) {
+      // Même principe : on vient de tout réactiver en masse dans le bloc
+      // détaillé, il faut donc ré-appliquer les conditions imbriquées.
+      updateCategorieProVisibility();
+      updateSituationFamilialeVisibility();
+      updateCoEmprunteurVisibility();
+    }
+  }
+
+  parcoursRadios.forEach(function (radio) {
+    radio.addEventListener("change", updateParcoursVisibility);
+  });
+  updateParcoursVisibility();
+
+  if (categoriePro) {
+    categoriePro.addEventListener("change", updateCategorieProVisibility);
+    updateCategorieProVisibility();
+  }
+  if (situationFamiliale) {
+    situationFamiliale.addEventListener("change", updateSituationFamilialeVisibility);
+    updateSituationFamilialeVisibility();
+  }
+  if (coEmprunteurPresent) {
+    coEmprunteurPresent.addEventListener("change", updateCoEmprunteurVisibility);
+    updateCoEmprunteurVisibility();
+  }
+  if (coCategoriePro) {
+    coCategoriePro.addEventListener("change", updateCoCategorieProVisibility);
+    updateCoCategorieProVisibility();
+  }
+  if (coSituationFamiliale) {
+    coSituationFamiliale.addEventListener("change", updateCoSituationFamilialeVisibility);
+    updateCoSituationFamilialeVisibility();
+  }
+
+  // Calcule un âge en années à partir d'une date de naissance (format
+  // AAAA-MM-JJ renvoyé par un input type="date"). Évite de demander à la
+  // fois la date de naissance et l'âge dans le formulaire.
+  function computeAgeFromDateNaissance(dateStr) {
+    if (!dateStr) return null;
+    const birth = new Date(dateStr);
+    if (isNaN(birth.getTime())) return null;
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+    return age;
+  }
+
+  // Validation du bloc détaillé : ne s'applique que si le parcours
+  // "transmission directe" est sélectionné. Les champs masqués (via
+  // .disabled, positionné par les fonctions de visibilité ci-dessus) sont
+  // ignorés automatiquement : inutile de dupliquer les conditions ici.
+  function validateDetailedPath() {
+    const selected = parcoursRadios.find(function (r) {
+      return r.checked;
+    });
+    if (!selected || selected.value !== "direct") return true;
+
+    let valid = true;
+
+    function req(input) {
+      if (!input || input.disabled) return;
+      if (!input.value || !input.value.trim()) {
+        input.setAttribute("aria-invalid", "true");
+        valid = false;
+      } else {
+        input.removeAttribute("aria-invalid");
+      }
+    }
+
+    req($("#date_naissance"));
+    req($("#lieu_naissance"));
+    req($("#categorie_pro"));
+    req($("#situation_familiale"));
+    req($("#nicotine_24mois"));
+    req($("#categorie_fonctionnaire"));
+    req($("#siren"));
+    req($("#code_ape"));
+    req($("#regime_matrimonial"));
+    req($("#regime_pacs"));
+    req($("#km_professionnel"));
+    req($("#profession_manuelle"));
+    req($("#produits_dangereux"));
+    req($("#activite_hauteur"));
+
+    if (coEmprunteurPresent && coEmprunteurPresent.checked) {
+      req($("#co_prenom"));
+      req($("#co_nom"));
+      req($("#co_date_naissance"));
+      req($("#co_categorie_pro"));
+      req($("#co_situation_familiale"));
+      req($("#co_categorie_fonctionnaire"));
+      req($("#co_siren"));
+      req($("#co_code_ape"));
+      req($("#co_regime_matrimonial"));
+      req($("#co_regime_pacs"));
+      req($("#co_km_professionnel"));
+      req($("#co_profession_manuelle"));
+      req($("#co_produits_dangereux"));
+      req($("#co_activite_hauteur"));
+    }
+
+    return valid;
+  }
+
+  // Compression légère des photos de documents avant envoi (les PDF sont
+  // transmis tels quels : une compression fiable de PDF côté navigateur
+  // demanderait une librairie dédiée, hors scope ici). Objectif : rester
+  // sous la limite de 5 Mo par fichier de l'API Airtable, y compris pour
+  // une photo prise directement au téléphone (souvent 8-10 Mo).
+  const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
+
+  function compressImageFile(file) {
+    if (!/^image\//.test(file.type)) {
+      return Promise.resolve(file);
+    }
+    return new Promise(function (resolve) {
+      const img = new Image();
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        img.onload = function () {
+          const maxDim = 1600;
+          let width = img.width;
+          let height = img.height;
+          if (width > maxDim || height > maxDim) {
+            const scale = maxDim / Math.max(width, height);
+            width = Math.round(width * scale);
+            height = Math.round(height * scale);
+          }
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, width, height);
+          canvas.toBlob(
+            function (blob) {
+              if (!blob || blob.size >= file.size) {
+                resolve(file);
+              } else {
+                resolve(new File([blob], file.name, { type: "image/jpeg" }));
+              }
+            },
+            "image/jpeg",
+            0.75
+          );
+        };
+        img.onerror = function () {
+          resolve(file);
+        };
+        img.src = e.target.result;
+      };
+      reader.onerror = function () {
+        resolve(file);
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function wireUploadCompression(inputId, errorId) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    input.addEventListener("change", function () {
+      const file = input.files && input.files[0];
+      if (!file) return;
+      const errorEl = document.getElementById(errorId);
+      if (errorEl) {
+        errorEl.hidden = true;
+        errorEl.textContent = "";
+      }
+      compressImageFile(file).then(function (finalFile) {
+        if (finalFile.size > MAX_UPLOAD_BYTES) {
+          if (errorEl) {
+            errorEl.textContent =
+              "Ce fichier dépasse 5 Mo même après compression. Merci d'en choisir un plus léger, ou de nous le transmettre par WhatsApp/email.";
+            errorEl.hidden = false;
+          }
+          input.value = "";
+          return;
+        }
+        if (finalFile !== file) {
+          const dt = new DataTransfer();
+          dt.items.add(finalFile);
+          input.files = dt.files;
+        }
+      });
+    });
+  }
+
+  wireUploadCompression("doc_offre_pret", "err-doc_offre_pret");
+  wireUploadCompression("doc_tableau_amortissement", "err-doc_tableau_amortissement");
+
+  /* --------------------------------------------------------------------
      4. VALIDATION INSTANTANÉE (étape 2)
   -------------------------------------------------------------------- */
   const prenomInput = $("#prenom");
@@ -274,7 +557,7 @@
   });
 
   /* --------------------------------------------------------------------
-     5. SOUMISSION NETLIFY FORMS EN AJAX + TRACKING
+     5. SOUMISSION NETLIFY FORMS EN AJAX + TRACKING + UPLOAD DOCUMENTS
   -------------------------------------------------------------------- */
   const form = $("#lead-form");
   const formErrorSummary = $("#form-error-summary");
@@ -292,7 +575,7 @@
       event.preventDefault();
 
       const fieldsToValidate = [prenomInput, nomInput, emailInput, telephoneInput, rgpdInput];
-      const allValid = fieldsToValidate.every((input) => validateField(input));
+      const allValid = fieldsToValidate.every((input) => validateField(input)) && validateDetailedPath();
 
       if (!allValid) {
         formErrorSummary.textContent = "Merci de corriger les champs signalés ci-dessus avant de continuer.";
@@ -306,13 +589,33 @@
       submitBtn.disabled = true;
       submitBtn.textContent = "Envoi en cours…";
 
+      const selectedParcours = parcoursRadios.find(function (r) {
+        return r.checked;
+      });
+      const parcoursValue = selectedParcours ? selectedParcours.value : "rappel";
+
       const formData = new FormData(form);
       const payload = {};
-      formData.forEach((value, key) => {
+      formData.forEach(function (value, key) {
+        // Les fichiers ne transitent jamais par ce payload urlencodé : ils
+        // sont envoyés séparément vers upload-document.js une fois le lead
+        // créé dans Airtable (voir plus bas).
+        if (value instanceof File) return;
         if (!(document.getElementById(key) && document.getElementById(key).disabled)) {
           payload[key] = value;
         }
       });
+
+      // Âge calculé côté client à partir de la date de naissance, pour ne
+      // pas demander deux fois la même information au visiteur.
+      if (payload.date_naissance) {
+        const age = computeAgeFromDateNaissance(payload.date_naissance);
+        if (age !== null) payload.age = String(age);
+      }
+      if (payload.co_date_naissance) {
+        const coAge = computeAgeFromDateNaissance(payload.co_date_naissance);
+        if (coAge !== null) payload.co_age = String(coAge);
+      }
 
       fetch("/", {
         method: "POST",
@@ -322,6 +625,15 @@
         .then(() => {
           form.hidden = true;
           formSuccess.hidden = false;
+
+          // Mémorise le parcours choisi pour adapter le message affiché sur
+          // la page de remerciement (pas d'appel promis dans le parcours
+          // "transmission directe"). Lecture unique, voir merci.html.
+          try {
+            sessionStorage.setItem("klarimo_parcours", parcoursValue);
+          } catch (e) {
+            /* silencieux : purement cosmétique, jamais bloquant */
+          }
 
           // Conversions API (optionnel) : copie côté serveur de l'événement
           // "Lead", en plus du Pixel navigateur. N'échoue jamais le parcours
@@ -349,12 +661,79 @@
           // si la variable AIRTABLE_TOKEN n'est pas configurée côté
           // Netlify, netlify/functions/airtable-lead.js répond simplement
           // "skipped" sans erreur.
-          fetch("/.netlify/functions/airtable-lead", {
+          //
+          // Parcours "transmission directe" uniquement : on a besoin du
+          // recordId Airtable renvoyé par la fonction pour pouvoir y
+          // attacher ensuite les documents transmis. On attend donc cette
+          // réponse précise (contrairement au parcours "rappel", qui reste
+          // entièrement fire-and-forget) ; un échec ici n'empêche jamais la
+          // redirection vers la page de remerciement.
+          if (parcoursValue === "direct") {
+            fetch("/.netlify/functions/airtable-lead", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+            })
+              .then(function (res) {
+                return res.json();
+              })
+              .then(function (data) {
+                const recordId = data && data.recordId;
+                if (!recordId) return;
+
+                const fileInputs = [
+                  { input: document.getElementById("doc_offre_pret"), champ: "doc_offre_pret" },
+                  {
+                    input: document.getElementById("doc_tableau_amortissement"),
+                    champ: "doc_tableau_amortissement",
+                  },
+                ];
+
+                fileInputs.forEach(function (item) {
+                  const file = item.input && item.input.files && item.input.files[0];
+                  if (!file) return;
+                  const uploadData = new FormData();
+                  uploadData.append("recordId", recordId);
+                  uploadData.append("champ", item.champ);
+                  uploadData.append("file", file);
+                  fetch("/.netlify/functions/upload-document", {
+                    method: "POST",
+                    body: uploadData,
+                  }).catch(function () {
+                    /* silencieux : l'échec d'un upload ne doit jamais bloquer le parcours */
+                  });
+                });
+              })
+              .catch(function () {
+                /* silencieux : le CRM est un bonus, jamais un blocage */
+              });
+          } else {
+            fetch("/.netlify/functions/airtable-lead", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+            }).catch(function () {
+              /* silencieux : le CRM est un bonus, jamais un blocage */
+            });
+          }
+
+          // Message de confirmation (email + SMS) envoyé au lead. Le texte
+          // s'adapte au parcours choisi (voir netlify/functions/lead-confirmation.js) :
+          // un appel est annoncé dans le parcours "rappel", alors que le
+          // parcours "transmission directe" annonce plutôt la préparation
+          // du devis. Comme les autres appels, n'échoue jamais le parcours
+          // utilisateur si les variables ne sont pas configurées côté Netlify.
+          fetch("/.netlify/functions/lead-confirmation", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
+            body: JSON.stringify({
+              prenom: payload.prenom,
+              email: payload.email,
+              telephone: payload.telephone,
+              parcours: parcoursValue,
+            }),
           }).catch(function () {
-            /* silencieux : le CRM est un bonus, jamais un blocage */
+            /* silencieux : la confirmation est un bonus, jamais un blocage */
           });
 
           // L'événement de conversion "Lead" est déclenché sur merci.html

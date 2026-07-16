@@ -355,7 +355,14 @@ input[aria-invalid="true"], select[aria-invalid="true"] { border-color: var(--co
   align-items: flex-start;
   gap: 10px;
 }
-.field-checkbox input { width: auto; margin-top: 4px; flex-shrink: 0; }
+.field-checkbox input {
+  width: 22px;
+  height: 22px;
+  margin-top: 2px;
+  flex-shrink: 0;
+  accent-color: var(--color-blue);
+  cursor: pointer;
+}
 .field-checkbox label { font-size: 0.82rem; font-weight: 400; color: var(--color-text-muted); }
 
 .form-confidentiality {
@@ -676,3 +683,104 @@ input[aria-invalid="true"], select[aria-invalid="true"] { border-color: var(--co
   .benefits-grid { grid-template-columns: repeat(2, 1fr); }
   .why-grid { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ====================================================================
+   PARCOURS DÉTAILLÉ : choix entre "être rappelé" et "transmettre
+   directement mes informations", et bloc de champs détaillés associé
+   (état civil, profession, situation familiale, co-emprunteur,
+   documents). Réutilise les mêmes conventions visuelles que les blocs
+   crédit existants (.credit-block) pour rester cohérent.
+==================================================================== */
+
+input[type="date"], input[type="number"], input[type="file"] {
+  width: 100%;
+  padding: 12px 14px;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  color: var(--color-text);
+  background: var(--color-bg);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  transition: border-color var(--transition-fast);
+}
+input[type="date"]:hover, input[type="number"]:hover, input[type="file"]:hover { border-color: var(--color-text-muted); }
+input[type="date"]:focus, input[type="number"]:focus, input[type="file"]:focus { border-color: var(--color-blue); outline: none; box-shadow: 0 0 0 3px rgba(26,43,74,0.12); }
+
+.parcours-choice { margin-bottom: var(--space-sm); }
+.parcours-choice-label {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--color-text);
+  margin-bottom: 10px;
+}
+.parcours-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-xs);
+}
+@media (max-width: 640px) {
+  .parcours-options { grid-template-columns: 1fr; }
+}
+.parcours-option {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--space-sm);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  background: var(--color-bg);
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+.parcours-option:hover { border-color: var(--color-text-muted); }
+.parcours-option:has(input:checked) {
+  border-color: var(--color-blue);
+  background: rgba(26,43,74,0.05);
+}
+.parcours-option input[type="radio"] {
+  width: 22px;
+  height: 22px;
+  margin: 0 0 6px;
+  accent-color: var(--color-blue);
+  cursor: pointer;
+}
+.parcours-option-title { font-size: 0.92rem; font-weight: 600; color: var(--color-text); }
+.parcours-option-desc { font-size: 0.8rem; color: var(--color-text-muted); }
+
+.bloc-parcours-direct { margin-top: var(--space-sm); }
+.parcours-direct-intro {
+  font-size: 0.85rem;
+  background: rgba(184,148,42,0.1);
+  border: 1px solid rgba(184,148,42,0.3);
+  border-radius: var(--radius-sm);
+  padding: var(--space-xs) var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.sous-bloc {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm);
+  margin: 0 0 var(--space-sm);
+  background: var(--color-bg);
+}
+.sous-bloc legend {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--color-blue);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0 4px;
+}
+
+.field-upload input[type="file"] { padding: 10px 14px; font-size: 0.9rem; }
+.upload-intro { font-size: 0.82rem; }
+.upload-status {
+  font-size: 0.82rem;
+  margin-top: var(--space-xs);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+}
+.upload-status.is-progress { background: rgba(26,43,74,0.08); color: var(--color-blue); }
+.upload-status.is-success { background: rgba(47,122,79,0.1); color: var(--color-success); }
+.upload-status.is-error { background: rgba(179,38,30,0.1); color: var(--color-danger); }
