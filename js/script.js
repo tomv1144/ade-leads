@@ -575,6 +575,10 @@
   const formErrorSummary = $("#form-error-summary");
   const formSuccess = $("#form-success");
   const submitBtn = $("#form-submit");
+  const formSuccessMessage = $("#form-success-message");
+  const uploadProgress = $("#upload-progress");
+  const uploadProgressFill = $("#upload-progress-fill");
+  const uploadProgressLabel = $("#upload-progress-label");
 
   function encode(data) {
     return Object.keys(data)
@@ -666,84 +670,10 @@
             /* silencieux : la Conversions API est un bonus, jamais un blocage */
           });
 
-          // CRM Airtable (optionnel) : copie chaque lead dans la base
-          // "Leads Klarimo" pour pouvoir suivre son statut (à contacter,
-          // contacté, RDV posé, signé...) et le montant gagné. Comme pour
-          // la Conversions API, n'échoue jamais le parcours utilisateur :
-          // si la variable AIRTABLE_TOKEN n'est pas configurée côté
-          // Netlify, netlify/functions/airtable-lead.js répond simplement
-          // "skipped" sans erreur.
-          //
-          // Parcours "transmission directe" uniquement : on a besoin du
-          // recordId Airtable renvoyé par la fonction pour pouvoir y
-          // attacher ensuite les documents transmis. On attend donc cette
-          // réponse précise (contrairement au parcours "rappel", qui reste
-          // entièrement fire-and-forget) ; un échec ici n'empêche jamais la
-          // redirection vers la page de remerciement.
-          if (parcoursValue === "direct") {
-            fetch("/.netlify/functions/airtable-lead", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(payload),
-            })
-              .then(function (res) {
-                return res.json();
-              })
-              .then(function (data) {
-                const recordId = data && data.recordId;
-                if (!recordId) return;
-
-                // Chaque champ peut désormais contenir plusieurs fichiers
-                // (plusieurs tableaux d'amortissement si plusieurs crédits) :
-                // on envoie un appel séparé par fichier, chacun s'ajoutant au
-                // champ Airtable correspondant (voir upload-document.mjs).
-                const fileInputs = [
-                  { input: document.getElementById("doc_offre_pret"), champ: "doc_offre_pret" },
-                  {
-                    input: document.getElementById("doc_tableau_amortissement"),
-                    champ: "doc_tableau_amortissement",
-                  },
-                  {
-                    input: document.getElementById("doc_assurance_emprunteur"),
-                    champ: "doc_assurance_emprunteur",
-                  },
-                ];
-
-                fileInputs.forEach(function (item) {
-                  const files = item.input && item.input.files ? Array.from(item.input.files) : [];
-                  files.forEach(function (file) {
-                    const uploadData = new FormData();
-                    uploadData.append("recordId", recordId);
-                    uploadData.append("champ", item.champ);
-                    uploadData.append("file", file);
-                    fetch("/.netlify/functions/upload-document", {
-                      method: "POST",
-                      body: uploadData,
-                    }).catch(function () {
-                      /* silencieux : l'échec d'un upload ne doit jamais bloquer le parcours */
-                    });
-                  });
-                });
-              })
-              .catch(function () {
-                /* silencieux : le CRM est un bonus, jamais un blocage */
-              });
-          } else {
-            fetch("/.netlify/functions/airtable-lead", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(payload),
-            }).catch(function () {
-              /* silencieux : le CRM est un bonus, jamais un blocage */
-            });
-          }
-
           // Message de confirmation (email + SMS) envoyé au lead. Le texte
-          // s'adapte au parcours choisi (voir netlify/functions/lead-confirmation.js) :
-          // un appel est annoncé dans le parcours "rappel", alors que le
-          // parcours "transmission directe" annonce plutôt la préparation
-          // du devis. Comme les autres appels, n'échoue jamais le parcours
-          // utilisateur si les variables ne sont pas configurées côté Netlify.
+          // s'adapte au parcours choisi (voir netlify/functions/lead-confirmation.js).
+          // Comme la Conversions API, n'échoue jamais le parcours utilisateur
+          // et n'a pas besoin d'être attendu avant de rediriger.
           fetch("/.netlify/functions/lead-confirmation", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -757,12 +687,147 @@
             /* silencieux : la confirmation est un bonus, jamais un blocage */
           });
 
-          // L'événement de conversion "Lead" est déclenché sur merci.html
-          // (page de confirmation), pas ici : ça garantit qu'il ne se
-          // déclenche que lorsque le visiteur a réellement vu la confirmation,
-          // et évite tout risque de double comptage si l'utilisateur
-          // rafraîchit ou revient en arrière avant la redirection.
-          window.location.href = "/merci.html";
+          // CRM Airtable : copie chaque lead dans la base "Leads Klarimo"
+          // pour pouvoir suivre son statut (à contacter, contacté, RDV
+          // posé, signé...) et le montant gagné. Si la variable
+          // AIRTABLE_TOKEN n'est pas configurée côté Netlify,
+          // netlify/functions/airtable-lead.js répond simplement "skipped"
+          // sans erreur : ne bloque jamais le parcours utilisateur.
+          //
+          // IMPORTANT (correctif) : dans le parcours "transmission directe",
+          // la redirection vers merci.html se faisait auparavant tout de
+          // suite après avoir *lancé* la création de la fiche Airtable et
+          // les envois de documents, sans attendre qu'ils se terminent.
+          // Or la navigation vers une nouvelle page interrompt le contexte
+          // JavaScript en cours : la suite de la chaîne (récupérer le
+          // recordId, puis attacher chaque fichier) ne s'exécutait donc
+          // souvent jamais, ce qui expliquait la perte silencieuse des
+          // documents malgré une fiche parfois bien créée. On attend donc
+          // maintenant explicitement la fin de cette chaîne (fiche +
+          // documents) avant de rediriger, avec un garde-fou de 20 secondes
+          // maximum pour ne jamais bloquer indéfiniment un visiteur en cas
+          // de réseau lent ou de panne côté Airtable. Le parcours "rappel"
+          // classique n'a pas de documents à attendre : il continue de
+          // rediriger immédiatement, sans attente.
+          if (parcoursValue === "direct") {
+            // Barre de progression : une étape pour la création de la fiche,
+            // puis une étape par fichier transmis. Le nombre total de
+            // fichiers est connu dès maintenant (les inputs ne changent
+            // plus une fois le formulaire soumis), ce qui permet d'afficher
+            // une progression réaliste plutôt qu'un simple message d'attente.
+            const fileInputsAEnvoyer = [
+              { input: document.getElementById("doc_offre_pret"), champ: "doc_offre_pret" },
+              {
+                input: document.getElementById("doc_tableau_amortissement"),
+                champ: "doc_tableau_amortissement",
+              },
+              {
+                input: document.getElementById("doc_assurance_emprunteur"),
+                champ: "doc_assurance_emprunteur",
+              },
+            ];
+            let totalFichiers = 0;
+            fileInputsAEnvoyer.forEach(function (item) {
+              totalFichiers += item.input && item.input.files ? item.input.files.length : 0;
+            });
+            const totalEtapes = 1 + totalFichiers; // 1 = création de la fiche
+            let etapesTerminees = 0;
+
+            function majProgression() {
+              const pourcentage = Math.round((etapesTerminees / totalEtapes) * 100);
+              if (uploadProgressFill) uploadProgressFill.style.width = pourcentage + "%";
+              if (uploadProgressLabel) {
+                uploadProgressLabel.textContent =
+                  totalFichiers > 0
+                    ? "Envoi de votre dossier… " + etapesTerminees + " sur " + totalEtapes
+                    : "Enregistrement de votre dossier…";
+              }
+            }
+
+            function etapeTerminee() {
+              etapesTerminees++;
+              majProgression();
+            }
+
+            if (formSuccessMessage) {
+              formSuccessMessage.textContent =
+                "Merci, votre demande a bien été envoyée. Envoi de votre dossier en cours…";
+            }
+            if (uploadProgress) uploadProgress.hidden = false;
+            majProgression();
+
+            const envoiFicheEtDocuments = fetch("/.netlify/functions/airtable-lead", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+            })
+              .then(function (res) {
+                return res.json();
+              })
+              .then(function (data) {
+                etapeTerminee();
+                const recordId = data && data.recordId;
+                if (!recordId) return null;
+
+                // Chaque champ peut désormais contenir plusieurs fichiers
+                // (plusieurs tableaux d'amortissement si plusieurs crédits) :
+                // on envoie un appel séparé par fichier, chacun s'ajoutant au
+                // champ Airtable correspondant (voir upload-document.mjs).
+                const uploadsEnCours = [];
+                fileInputsAEnvoyer.forEach(function (item) {
+                  const files = item.input && item.input.files ? Array.from(item.input.files) : [];
+                  files.forEach(function (file) {
+                    const uploadData = new FormData();
+                    uploadData.append("recordId", recordId);
+                    uploadData.append("champ", item.champ);
+                    uploadData.append("file", file);
+                    uploadsEnCours.push(
+                      fetch("/.netlify/functions/upload-document", {
+                        method: "POST",
+                        body: uploadData,
+                      })
+                        .catch(function () {
+                          /* silencieux : l'échec d'un fichier isolé ne doit pas bloquer les autres */
+                        })
+                        .then(function (res) {
+                          etapeTerminee();
+                          return res;
+                        })
+                    );
+                  });
+                });
+
+                return Promise.all(uploadsEnCours);
+              })
+              .catch(function () {
+                /* silencieux : même en cas d'échec, on laisse le garde-fou
+                   ci-dessous décider du moment de la redirection */
+                etapesTerminees = totalEtapes;
+                majProgression();
+              });
+
+            const gardeFou20s = new Promise(function (resolve) {
+              setTimeout(resolve, 20000);
+            });
+
+            Promise.race([envoiFicheEtDocuments, gardeFou20s]).then(function () {
+              // L'événement de conversion "Lead" est déclenché sur merci.html
+              // (page de confirmation), pas ici : ça garantit qu'il ne se
+              // déclenche que lorsque le visiteur a réellement vu la
+              // confirmation.
+              window.location.href = "/merci.html";
+            });
+          } else {
+            fetch("/.netlify/functions/airtable-lead", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+            }).catch(function () {
+              /* silencieux : le CRM est un bonus, jamais un blocage */
+            });
+
+            window.location.href = "/merci.html";
+          }
         })
         .catch(function () {
           formErrorSummary.textContent = "Une erreur est survenue lors de l'envoi. Merci de réessayer, ou de nous appeler directement.";

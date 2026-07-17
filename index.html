@@ -765,7 +765,13 @@
 
             <div class="form-success" id="form-success" hidden role="status">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 12.5 9.5 18 20 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              <p>Merci, votre demande a bien été envoyée. Redirection en cours…</p>
+              <p id="form-success-message">Merci, votre demande a bien été envoyée. Redirection en cours…</p>
+              <div class="upload-progress" id="upload-progress" hidden>
+                <div class="upload-progress-track">
+                  <div class="upload-progress-fill" id="upload-progress-fill"></div>
+                </div>
+                <p class="upload-progress-label" id="upload-progress-label">Envoi de votre dossier…</p>
+              </div>
             </div>
           </form>
         </div>

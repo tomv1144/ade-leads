@@ -411,6 +411,37 @@ input[aria-invalid="true"], select[aria-invalid="true"] { border-color: var(--co
 .form-success svg { margin: 0 auto 10px; }
 .form-success p { color: var(--color-success); font-weight: 500; }
 
+/* Barre de progression affichée pendant l'envoi de la fiche et des
+   documents du parcours "transmission directe" (voir js/script.js,
+   section 5). Reste masquée pour le parcours "rappel", qui redirige
+   immédiatement sans documents à transmettre. */
+.upload-progress {
+  margin-top: var(--space-sm);
+  max-width: 320px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.upload-progress-track {
+  width: 100%;
+  height: 8px;
+  background: var(--color-border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.upload-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--color-blue);
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+.upload-progress-label {
+  margin-top: 8px;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  font-weight: 400;
+}
+
 /* ---------------------------------------------------------------------------
    6. TRUST BAR
 --------------------------------------------------------------------------- */
