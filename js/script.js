@@ -639,8 +639,12 @@
         body: encode(payload),
       })
         .then(() => {
-          form.hidden = true;
-          formSuccess.hidden = false;
+          // Le formulaire n'est plus masqué ici de façon inconditionnelle :
+          // pour le parcours "transmission directe", le masquer avant la fin
+          // de l'envoi des documents provoquait un effondrement brutal de la
+          // mise en page (le formulaire détaillé est bien plus haut que le
+          // message de succès), donnant l'impression de revenir en haut de
+          // la page. Chaque parcours gère donc sa propre transition plus bas.
 
           // Mémorise le parcours choisi pour adapter le message affiché sur
           // la page de remerciement (pas d'appel promis dans le parcours
@@ -747,12 +751,12 @@
             function etapeTerminee() {
               etapesTerminees++;
               majProgression();
+              submitBtn.textContent =
+                totalFichiers > 0
+                  ? "Envoi en cours… (" + etapesTerminees + "/" + totalEtapes + ")"
+                  : "Envoi en cours…";
             }
 
-            if (formSuccessMessage) {
-              formSuccessMessage.textContent =
-                "Merci, votre demande a bien été envoyée. Envoi de votre dossier en cours…";
-            }
             if (uploadProgress) uploadProgress.hidden = false;
             majProgression();
 
@@ -814,7 +818,11 @@
               // L'événement de conversion "Lead" est déclenché sur merci.html
               // (page de confirmation), pas ici : ça garantit qu'il ne se
               // déclenche que lorsque le visiteur a réellement vu la
-              // confirmation.
+              // confirmation. On bascule sur l'écran de succès juste avant
+              // de rediriger : la transition n'est jamais visible puisque la
+              // navigation suit immédiatement.
+              form.hidden = true;
+              formSuccess.hidden = false;
               window.location.href = "/merci.html";
             });
           } else {
@@ -826,6 +834,8 @@
               /* silencieux : le CRM est un bonus, jamais un blocage */
             });
 
+            form.hidden = true;
+            formSuccess.hidden = false;
             window.location.href = "/merci.html";
           }
         })
