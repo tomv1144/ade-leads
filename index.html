@@ -418,6 +418,11 @@
                   </div>
 
                   <div class="field">
+                    <label for="profession">Profession</label>
+                    <input type="text" id="profession" name="profession" autocomplete="off" placeholder="Ex : plombier, infirmière, commercial...">
+                  </div>
+
+                  <div class="field">
                     <label for="categorie_pro">Catégorie professionnelle</label>
                     <select id="categorie_pro" name="categorie_pro">
                       <option value="">Sélectionnez</option>
@@ -586,6 +591,11 @@
                   </div>
 
                   <div class="field">
+                    <label for="co_profession">Profession</label>
+                    <input type="text" id="co_profession" name="co_profession" autocomplete="off" placeholder="Ex : plombier, infirmière, commercial...">
+                  </div>
+
+                  <div class="field">
                     <label for="co_categorie_pro">Catégorie professionnelle</label>
                     <select id="co_categorie_pro" name="co_categorie_pro">
                       <option value="">Sélectionnez</option>
@@ -709,18 +719,25 @@
 
                 <fieldset class="sous-bloc">
                   <legend>Vos documents</legend>
-                  <p class="upload-intro">Fichiers PDF ou photo, 5 Mo maximum chacun. Facultatif à cette étape : vous pouvez aussi les transmettre plus tard par WhatsApp ou email.</p>
+                  <p class="upload-intro">Fichiers PDF ou photo, 5 Mo maximum par fichier. Facultatif à cette étape : vous pouvez aussi les transmettre plus tard par WhatsApp ou email.</p>
+                  <p class="upload-intro">Si votre offre de prêt comporte plusieurs crédits (prêt classique, prêt à taux zéro, prêt relais...), merci de joindre le tableau d'amortissement de chacun d'eux. Si votre assurance emprunteur n'apparaît pas dans ces tableaux, joignez aussi son contrat ou son propre tableau d'amortissement ci-dessous.</p>
 
                   <div class="field field-upload">
                     <label for="doc_offre_pret">Offre de prêt définitive</label>
-                    <input type="file" id="doc_offre_pret" name="doc_offre_pret" accept=".pdf,.jpg,.jpeg,.png">
+                    <input type="file" id="doc_offre_pret" name="doc_offre_pret" accept=".pdf,.jpg,.jpeg,.png" multiple>
                     <p class="field-error" role="alert" id="err-doc_offre_pret" hidden></p>
                   </div>
 
                   <div class="field field-upload">
-                    <label for="doc_tableau_amortissement">Tableau d'amortissement définitif</label>
-                    <input type="file" id="doc_tableau_amortissement" name="doc_tableau_amortissement" accept=".pdf,.jpg,.jpeg,.png">
+                    <label for="doc_tableau_amortissement">Tableau(x) d'amortissement du/des crédit(s) <span class="optional">(un fichier par crédit si plusieurs)</span></label>
+                    <input type="file" id="doc_tableau_amortissement" name="doc_tableau_amortissement" accept=".pdf,.jpg,.jpeg,.png" multiple>
                     <p class="field-error" role="alert" id="err-doc_tableau_amortissement" hidden></p>
+                  </div>
+
+                  <div class="field field-upload">
+                    <label for="doc_assurance_emprunteur">Contrat ou tableau d'amortissement de l'assurance emprunteur <span class="optional">(si non présent ci-dessus)</span></label>
+                    <input type="file" id="doc_assurance_emprunteur" name="doc_assurance_emprunteur" accept=".pdf,.jpg,.jpeg,.png" multiple>
+                    <p class="field-error" role="alert" id="err-doc_assurance_emprunteur" hidden></p>
                   </div>
 
                   <p class="upload-status" id="upload-status" hidden></p>
@@ -1033,4 +1050,3 @@
 </script>
 </body>
 </html>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            

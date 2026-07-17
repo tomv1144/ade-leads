@@ -280,7 +280,7 @@ select:focus-visible, summary:focus-visible {
 
 /* Champs de formulaire */
 .field { margin-bottom: var(--space-sm); }
-.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-sm); }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-sm); align-items: stretch; }
 .field label {
   display: block;
   font-size: 0.88rem;
@@ -289,6 +289,22 @@ select:focus-visible, summary:focus-visible {
   margin-bottom: 6px;
 }
 .field .optional { font-weight: 400; color: var(--color-text-muted); }
+/* Alignement des paires de champs : quand un libellé fait deux lignes
+   (ex. « Tableau(x) d'amortissement... ») et son voisin une seule, les deux
+   champs restent quand même à la même hauteur dans la ligne (les deux
+   colonnes de la grille sont déjà de même hauteur via align-items: stretch
+   ci-dessus). En transformant chaque .field en colonne flex et en poussant
+   son input/select tout en bas avec margin-top: auto, les deux champs de la
+   paire démarrent visuellement à la même hauteur quel que soit le nombre de
+   lignes de leurs libellés respectifs. */
+.field-row .field {
+  display: flex;
+  flex-direction: column;
+}
+.field-row .field input,
+.field-row .field select {
+  margin-top: auto;
+}
 
 input[type="text"], input[type="tel"], input[type="email"], select {
   width: 100%;

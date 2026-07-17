@@ -392,6 +392,7 @@
 
     req($("#date_naissance"));
     req($("#lieu_naissance"));
+    req($("#profession"));
     req($("#categorie_pro"));
     req($("#situation_familiale"));
     req($("#nicotine_24mois"));
@@ -409,8 +410,11 @@
       req($("#co_prenom"));
       req($("#co_nom"));
       req($("#co_date_naissance"));
+      req($("#co_lieu_naissance"));
+      req($("#co_profession"));
       req($("#co_categorie_pro"));
       req($("#co_situation_familiale"));
+      req($("#co_nicotine_24mois"));
       req($("#co_categorie_fonctionnaire"));
       req($("#co_siren"));
       req($("#co_code_ape"));
@@ -478,38 +482,46 @@
     });
   }
 
+  // Chaque champ accepte désormais plusieurs fichiers (un tableau
+  // d'amortissement par crédit, par exemple) : on compresse chaque fichier
+  // sélectionné indépendamment, puis on reconstruit la liste de fichiers du
+  // champ avec les versions compressées.
   function wireUploadCompression(inputId, errorId) {
     const input = document.getElementById(inputId);
     if (!input) return;
     input.addEventListener("change", function () {
-      const file = input.files && input.files[0];
-      if (!file) return;
+      const files = input.files ? Array.from(input.files) : [];
+      if (!files.length) return;
       const errorEl = document.getElementById(errorId);
       if (errorEl) {
         errorEl.hidden = true;
         errorEl.textContent = "";
       }
-      compressImageFile(file).then(function (finalFile) {
-        if (finalFile.size > MAX_UPLOAD_BYTES) {
+      Promise.all(files.map(compressImageFile)).then(function (finalFiles) {
+        const tropLourd = finalFiles.find(function (f) {
+          return f.size > MAX_UPLOAD_BYTES;
+        });
+        if (tropLourd) {
           if (errorEl) {
             errorEl.textContent =
-              "Ce fichier dépasse 5 Mo même après compression. Merci d'en choisir un plus léger, ou de nous le transmettre par WhatsApp/email.";
+              "« " + tropLourd.name + " » dépasse 5 Mo même après compression. Merci de le remplacer par un fichier plus léger, ou de nous le transmettre par WhatsApp/email.";
             errorEl.hidden = false;
           }
           input.value = "";
           return;
         }
-        if (finalFile !== file) {
-          const dt = new DataTransfer();
-          dt.items.add(finalFile);
-          input.files = dt.files;
-        }
+        const dt = new DataTransfer();
+        finalFiles.forEach(function (f) {
+          dt.items.add(f);
+        });
+        input.files = dt.files;
       });
     });
   }
 
   wireUploadCompression("doc_offre_pret", "err-doc_offre_pret");
   wireUploadCompression("doc_tableau_amortissement", "err-doc_tableau_amortissement");
+  wireUploadCompression("doc_assurance_emprunteur", "err-doc_assurance_emprunteur");
 
   /* --------------------------------------------------------------------
      4. VALIDATION INSTANTANÉE (étape 2)
@@ -681,26 +693,35 @@
                 const recordId = data && data.recordId;
                 if (!recordId) return;
 
+                // Chaque champ peut désormais contenir plusieurs fichiers
+                // (plusieurs tableaux d'amortissement si plusieurs crédits) :
+                // on envoie un appel séparé par fichier, chacun s'ajoutant au
+                // champ Airtable correspondant (voir upload-document.mjs).
                 const fileInputs = [
                   { input: document.getElementById("doc_offre_pret"), champ: "doc_offre_pret" },
                   {
                     input: document.getElementById("doc_tableau_amortissement"),
                     champ: "doc_tableau_amortissement",
                   },
+                  {
+                    input: document.getElementById("doc_assurance_emprunteur"),
+                    champ: "doc_assurance_emprunteur",
+                  },
                 ];
 
                 fileInputs.forEach(function (item) {
-                  const file = item.input && item.input.files && item.input.files[0];
-                  if (!file) return;
-                  const uploadData = new FormData();
-                  uploadData.append("recordId", recordId);
-                  uploadData.append("champ", item.champ);
-                  uploadData.append("file", file);
-                  fetch("/.netlify/functions/upload-document", {
-                    method: "POST",
-                    body: uploadData,
-                  }).catch(function () {
-                    /* silencieux : l'échec d'un upload ne doit jamais bloquer le parcours */
+                  const files = item.input && item.input.files ? Array.from(item.input.files) : [];
+                  files.forEach(function (file) {
+                    const uploadData = new FormData();
+                    uploadData.append("recordId", recordId);
+                    uploadData.append("champ", item.champ);
+                    uploadData.append("file", file);
+                    fetch("/.netlify/functions/upload-document", {
+                      method: "POST",
+                      body: uploadData,
+                    }).catch(function () {
+                      /* silencieux : l'échec d'un upload ne doit jamais bloquer le parcours */
+                    });
                   });
                 });
               })

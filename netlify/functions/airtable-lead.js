@@ -67,6 +67,7 @@ function buildInfosCoEmprunteur(payload) {
   push("Âge", payload.co_age);
   push("Lieu de naissance", payload.co_lieu_naissance);
   push("Nationalité", payload.co_nationalite);
+  push("Profession", payload.co_profession);
   push("Catégorie professionnelle", payload.co_categorie_pro);
   push("Catégorie fonctionnaire", payload.co_categorie_fonctionnaire);
   push("SIREN", payload.co_siren);
@@ -120,6 +121,7 @@ exports.handler = async function (event) {
     "Âge": payload.age ? parseInt(payload.age, 10) : undefined,
     "Lieu de naissance": payload.lieu_naissance || "",
     "Nationalité": payload.nationalite || "",
+    "Profession": payload.profession || "",
     "Catégorie professionnelle": payload.categorie_pro || undefined,
     "Catégorie fonctionnaire": payload.categorie_fonctionnaire || undefined,
     "SIREN": payload.siren || "",

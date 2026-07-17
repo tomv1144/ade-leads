@@ -1,7 +1,11 @@
 // ============================================================================
-// Klarimo : fonction Netlify qui reçoit un document (offre de prêt ou tableau
-// d'amortissement) transmis via le parcours "transmission directe", et
-// l'attache au bon enregistrement Airtable (champ "Documents transmis").
+// Klarimo : fonction Netlify qui reçoit un document (offre de prêt, tableau
+// d'amortissement, ou document d'assurance emprunteur) transmis via le
+// parcours "transmission directe", et l'attache au bon enregistrement
+// Airtable. Un lead peut transmettre plusieurs tableaux d'amortissement
+// (un par crédit : prêt classique, prêt à taux zéro...) : chaque fichier
+// déclenche un appel séparé à cette fonction, voir CHAMP_CONFIG plus bas
+// pour le champ Airtable de destination de chaque type de document.
 //
 // Format moderne (.mjs, Request/Response natifs de la plateforme web) choisi
 // spécifiquement pour cette fonction afin de pouvoir lire un envoi
@@ -26,13 +30,20 @@
 // ============================================================================
 
 const AIRTABLE_BASE_ID = "appBngDi0WIiKbQZc";
-const AIRTABLE_ATTACHMENT_FIELD = "Documents transmis";
 const MAX_BYTES = 5 * 1024 * 1024;
 
-const CHAMP_LABELS = {
-  doc_offre_pret: "Offre de pret",
-  doc_tableau_amortissement: "Tableau amortissement",
+// Chaque type de document a son propre champ Airtable, pour que Tom retrouve
+// facilement les documents du prêt d'un côté et ceux de l'assurance de
+// l'autre en ouvrant la fiche. "Tableau d'amortissement" et "Offre de prêt"
+// acceptent plusieurs fichiers côté formulaire (plusieurs crédits possibles :
+// prêt classique, prêt à taux zéro...), chaque fichier déclenche un appel
+// séparé à cette fonction et s'ajoute au même champ d'attachement.
+const CHAMP_CONFIG = {
+  doc_offre_pret: { field: "Documents transmis", label: "Offre de pret" },
+  doc_tableau_amortissement: { field: "Documents transmis", label: "Tableau amortissement" },
+  doc_assurance_emprunteur: { field: "Documents assurance emprunteur", label: "Assurance emprunteur" },
 };
+const DEFAULT_CONFIG = { field: "Documents transmis", label: "Document" };
 
 function jsonResponse(body) {
   return new Response(JSON.stringify(body), {
@@ -68,12 +79,12 @@ export default async (req) => {
     const arrayBuffer = await file.arrayBuffer();
     const base64 = Buffer.from(arrayBuffer).toString("base64");
 
-    const label = CHAMP_LABELS[champ] || "Document";
-    const filename = label + " - " + (file.name || "document");
+    const config = CHAMP_CONFIG[champ] || DEFAULT_CONFIG;
+    const filename = config.label + " - " + (file.name || "document");
 
     const response = await fetch(
       `https://content.airtable.com/v0/${AIRTABLE_BASE_ID}/${recordId}/${encodeURIComponent(
-        AIRTABLE_ATTACHMENT_FIELD
+        config.field
       )}/uploadAttachment`,
       {
         method: "POST",
